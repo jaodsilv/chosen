@@ -1,7 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(.venv/Scripts/pip install -r backendrequirements.txt -r backendrequirements-dev.txt)"
+      "Bash(git-crypt:*)",
+      "Bash(python:*)",
+      "Bash(.venv/Scripts/pip install -r backendrequirements.txt -r backendrequirements-dev.txt)",
+      "Bash(python -m pytest:*)",
+      "Bash(python -m black:*)",
+      "Bash(python -m mypy:*)",
+      "Bash(git worktree:*)",
+      "Bash(test:*)",
+      "Bash(python -m pytest tests/unit/models/ -v --tb=short)",
+      "Bash(python -m pytest tests/integration/models/ -v --tb=short)",
+      "Bash(python -m pytest tests/ -v --tb=short)",
+      "Bash(python -m black:*)",
+      "Bash(python -m mypy:*)",
+      "Bash(python -m pytest tests/ --tb=short)",
+      "Bash(git add:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
