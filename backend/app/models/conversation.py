@@ -4,7 +4,7 @@ This module contains the Conversation model representing a full
 conversation thread with a recruiter.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import uuid4
 
@@ -45,8 +45,8 @@ class Conversation(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
 
     id: str = Field(default_factory=lambda: str(uuid4()))
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     platform: Platform
     company: Optional[str] = None
     recruiting_company: Optional[str] = None
