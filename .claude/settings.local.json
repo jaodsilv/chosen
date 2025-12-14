@@ -18,7 +18,8 @@
       "Bash(git add:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(.venv/Scripts/pip install:*)"
     ]
   }
 }
