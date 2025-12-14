@@ -65,7 +65,10 @@ class TestGetSettings:
         assert "http://localhost:5173" in origins
 
     def test_settings_has_claude_config(self) -> None:
-        """Test that Settings has Claude configuration (no API key - uses Claude Code local setup)."""
+        """Test that Settings has Claude configuration.
+
+        Note: No API key needed - uses Claude Code local setup.
+        """
         settings = get_settings()
         assert hasattr(settings, "default_model")
         assert settings.default_model == "sonnet"

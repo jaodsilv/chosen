@@ -27,7 +27,9 @@ jobs:
 
     steps:
       - name: Validate PAT token exists
-        if: ${{ secrets.ADD_TO_PROJECT_PAT == '' }}
+        env:
+          PAT_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
+        if: ${{ env.PAT_TOKEN == '' }}
         run: |
           echo "::error::ADD_TO_PROJECT_PAT secret is not configured"
           exit 1

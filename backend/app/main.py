@@ -95,8 +95,13 @@ async def root() -> Dict[str, str]:
 
 
 # API routers will be added here as they are implemented:
-# app.include_router(conversations.router, prefix="/api/v1/conversations", tags=["conversations"])
-# app.include_router(messages.router, prefix="/api/v1/messages", tags=["messages"])
-# app.include_router(analysis.router, prefix="/api/v1/analysis", tags=["analysis"])
-# app.include_router(settings.router, prefix="/api/v1/settings", tags=["settings"])
-# app.include_router(websocket.router, prefix="/api/v1/ws", tags=["websocket"])
+# app.include_router(conversations.router, prefix="/api/v1/conversations",
+#                    tags=["conversations"])
+# app.include_router(messages.router, prefix="/api/v1/messages",
+#                    tags=["messages"])
+# app.include_router(analysis.router, prefix="/api/v1/analysis",
+#                    tags=["analysis"])
+# app.include_router(settings.router, prefix="/api/v1/settings",
+#                    tags=["settings"])
+# app.include_router(websocket.router, prefix="/api/v1/ws",
+#                    tags=["websocket"])

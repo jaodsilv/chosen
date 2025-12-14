@@ -1,7 +1,5 @@
 """Dependency injection for FastAPI."""
 
-from typing import Generator
-
 from app.config import Settings, get_settings
 
 

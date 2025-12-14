@@ -1,8 +1,10 @@
 """Pytest configuration and fixtures."""
 
+from typing import Any, AsyncGenerator, Dict
+
 import pytest
 from fastapi.testclient import TestClient
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 
 from app.main import app
 
@@ -14,14 +16,15 @@ def client() -> TestClient:
 
 
 @pytest.fixture
-async def async_client() -> AsyncClient:
+async def async_client() -> AsyncGenerator[AsyncClient, None]:
     """Create an asynchronous test client."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
 
 @pytest.fixture
-def test_settings() -> dict:
+def test_settings() -> Dict[str, Any]:
     """Provide test settings override."""
     return {
         "env": "test",
