@@ -46,7 +46,7 @@ class TestJobFitScoreCreation:
     def test_job_fit_score_missing_overall_score_raises_error(self) -> None:
         """Test missing overall_score raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            JobFitScore(
+            JobFitScore(  # type: ignore[call-arg]
                 required_skills_score=90.0,
                 preferred_skills_score=75.0,
                 experience_match=85.0,
@@ -57,7 +57,7 @@ class TestJobFitScoreCreation:
     def test_job_fit_score_missing_required_skills_score_raises_error(self) -> None:
         """Test missing required_skills_score raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            JobFitScore(
+            JobFitScore(  # type: ignore[call-arg]
                 overall_score=85.0,
                 preferred_skills_score=75.0,
                 experience_match=85.0,
@@ -348,10 +348,10 @@ class TestJobFitScoreEdgeCases:
     def test_score_with_integer_values(self) -> None:
         """Test scores with integer values (should be coerced to float)."""
         score = JobFitScore(
-            overall_score=85,  # type: ignore
-            required_skills_score=90,  # type: ignore
-            preferred_skills_score=75,  # type: ignore
-            experience_match=85,  # type: ignore
+            overall_score=85,
+            required_skills_score=90,
+            preferred_skills_score=75,
+            experience_match=85,
         )
         assert score.overall_score == 85.0
         assert isinstance(score.overall_score, float)

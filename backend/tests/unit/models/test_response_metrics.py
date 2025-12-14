@@ -11,7 +11,6 @@ import json
 from typing import Any, Dict
 
 import pytest
-from pydantic import ValidationError
 
 from app.models.metrics import ResponseMetrics
 
@@ -241,6 +240,7 @@ class TestResponseMetricsEdgeCases:
             recruiter_avg_hours=24.123456789,
             candidate_avg_hours=12.987654321,
         )
+        assert metrics.recruiter_avg_hours is not None
         assert abs(metrics.recruiter_avg_hours - 24.123456789) < 0.0001
 
     def test_metrics_asymmetric_counts(self) -> None:

@@ -5,7 +5,7 @@ This module contains tests for:
 """
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict
 from uuid import UUID
 
@@ -58,7 +58,7 @@ class TestConversationCreation:
     def test_conversation_missing_platform_raises_error(self) -> None:
         """Test missing platform raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            Conversation(recruiter_name="Test Recruiter")
+            Conversation(recruiter_name="Test Recruiter")  # type: ignore[call-arg]
 
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("platform",) for e in errors)
@@ -66,7 +66,7 @@ class TestConversationCreation:
     def test_conversation_missing_recruiter_name_raises_error(self) -> None:
         """Test missing recruiter_name raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            Conversation(platform="linkedin")
+            Conversation(platform=Platform.LINKEDIN)  # type: ignore[call-arg]
 
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("recruiter_name",) for e in errors)
@@ -139,8 +139,11 @@ class TestConversationDefaults:
 class TestConversationPlatformValidation:
     """Test suite for Conversation platform field validation."""
 
-    @pytest.mark.parametrize("platform", ["linkedin", "email", "phone", "in_person"])
-    def test_conversation_accepts_valid_platforms(self, platform: str) -> None:
+    @pytest.mark.parametrize(
+        "platform",
+        [Platform.LINKEDIN, Platform.EMAIL, Platform.PHONE, Platform.IN_PERSON],
+    )
+    def test_conversation_accepts_valid_platforms(self, platform: Platform) -> None:
         """Test Conversation accepts all valid platform values."""
         conv = Conversation(platform=platform, recruiter_name="Test Recruiter")
         assert conv.platform == platform
@@ -163,26 +166,26 @@ class TestConversationStatusValidation:
     @pytest.mark.parametrize(
         "status",
         [
-            "new",
-            "reviewing",
-            "interested",
-            "not_interested",
-            "applied",
-            "awaiting_response",
-            "interviewing",
-            "offer",
-            "negotiating",
-            "accepted",
-            "declined",
-            "rejected",
-            "withdrawn",
-            "ghosted",
+            ProcessStatus.NEW,
+            ProcessStatus.REVIEWING,
+            ProcessStatus.INTERESTED,
+            ProcessStatus.NOT_INTERESTED,
+            ProcessStatus.APPLIED,
+            ProcessStatus.AWAITING_RESPONSE,
+            ProcessStatus.INTERVIEWING,
+            ProcessStatus.OFFER,
+            ProcessStatus.NEGOTIATING,
+            ProcessStatus.ACCEPTED,
+            ProcessStatus.DECLINED,
+            ProcessStatus.REJECTED,
+            ProcessStatus.WITHDRAWN,
+            ProcessStatus.GHOSTED,
         ],
     )
-    def test_conversation_accepts_valid_status(self, status: str) -> None:
+    def test_conversation_accepts_valid_status(self, status: ProcessStatus) -> None:
         """Test Conversation accepts all valid status values."""
         conv = Conversation(
-            platform="linkedin",
+            platform=Platform.LINKEDIN,
             recruiter_name="Test Recruiter",
             process_status=status,
         )
@@ -192,9 +195,9 @@ class TestConversationStatusValidation:
         """Test Conversation rejects invalid status value."""
         with pytest.raises(ValidationError):
             Conversation(
-                platform="linkedin",
+                platform=Platform.LINKEDIN,
                 recruiter_name="Test Recruiter",
-                process_status="invalid_status",
+                process_status="invalid_status",  # type: ignore[arg-type]
             )
 
 
@@ -287,15 +290,15 @@ class TestConversationUUIDGeneration:
         """Test Conversation uses provided id when given."""
         conv = Conversation(
             id=fixed_uuid_str,
-            platform="linkedin",
+            platform=Platform.LINKEDIN,
             recruiter_name="Test",
         )
         assert conv.id == fixed_uuid_str
 
     def test_multiple_conversations_get_unique_ids(self) -> None:
         """Test each new Conversation gets unique id."""
-        conv1 = Conversation(platform="linkedin", recruiter_name="Test 1")
-        conv2 = Conversation(platform="linkedin", recruiter_name="Test 2")
+        conv1 = Conversation(platform=Platform.LINKEDIN, recruiter_name="Test 1")
+        conv2 = Conversation(platform=Platform.LINKEDIN, recruiter_name="Test 2")
 
         assert conv1.id != conv2.id
 
@@ -325,7 +328,7 @@ class TestConversationTimestampGeneration:
     ) -> None:
         """Test Conversation uses provided timestamps when given."""
         conv = Conversation(
-            platform="linkedin",
+            platform=Platform.LINKEDIN,
             recruiter_name="Test",
             created_at=fixed_datetime,
             updated_at=fixed_datetime,
@@ -438,15 +441,15 @@ class TestConversationEdgeCases:
     def test_conversation_with_many_messages(self, fixed_datetime: datetime) -> None:
         """Test Conversation with many messages."""
         messages = [
-            {
-                "timestamp": fixed_datetime,
-                "from_name": f"Person {i}",
-                "body": f"Message {i}",
-            }
+            Message(
+                timestamp=fixed_datetime,
+                from_name=f"Person {i}",
+                body=f"Message {i}",
+            )
             for i in range(100)
         ]
         conv = Conversation(
-            platform="linkedin",
+            platform=Platform.LINKEDIN,
             recruiter_name="Test",
             messages=messages,
         )
@@ -456,7 +459,7 @@ class TestConversationEdgeCases:
         """Test Conversation with many context notes."""
         context = [f"Context note {i}" for i in range(50)]
         conv = Conversation(
-            platform="linkedin",
+            platform=Platform.LINKEDIN,
             recruiter_name="Test",
             context=context,
         )
@@ -465,7 +468,7 @@ class TestConversationEdgeCases:
     def test_conversation_with_unicode_in_fields(self) -> None:
         """Test Conversation with unicode characters."""
         conv = Conversation(
-            platform="linkedin",
+            platform=Platform.LINKEDIN,
             recruiter_name="田中太郎",
             company="日本株式会社",
             context=["給与は相談可能 🤝"],
@@ -477,7 +480,7 @@ class TestConversationEdgeCases:
     def test_conversation_archived_with_reason(self, fixed_datetime: datetime) -> None:
         """Test Conversation with archived status and reason."""
         conv = Conversation(
-            platform="linkedin",
+            platform=Platform.LINKEDIN,
             recruiter_name="Test",
             archived=True,
             archived_at=fixed_datetime,
@@ -490,7 +493,7 @@ class TestConversationEdgeCases:
     def test_conversation_with_related_conversations(self) -> None:
         """Test Conversation with related conversation IDs."""
         conv = Conversation(
-            platform="linkedin",
+            platform=Platform.LINKEDIN,
             recruiter_name="Test",
             related_conversation_ids=[
                 "uuid-1",

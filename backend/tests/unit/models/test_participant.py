@@ -46,7 +46,7 @@ class TestParticipantCreation:
     def test_participant_missing_name_raises_error(self) -> None:
         """Test missing name raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            Participant(role="recruiter")
+            Participant(role=ParticipantRole.RECRUITER)  # type: ignore[call-arg]
 
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("name",) for e in errors)
@@ -54,7 +54,7 @@ class TestParticipantCreation:
     def test_participant_missing_role_raises_error(self) -> None:
         """Test missing role raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            Participant(name="John Doe")
+            Participant(name="John Doe")  # type: ignore[call-arg]
 
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("role",) for e in errors)
@@ -64,9 +64,16 @@ class TestParticipantCreation:
 class TestParticipantRoleValidation:
     """Test suite for Participant role field validation."""
 
-    @pytest.mark.parametrize("role", ["recruiter", "candidate", "hiring_manager"])
-    def test_participant_accepts_valid_role_string(self, role: str) -> None:
-        """Test Participant accepts valid role string values."""
+    @pytest.mark.parametrize(
+        "role",
+        [
+            ParticipantRole.RECRUITER,
+            ParticipantRole.CANDIDATE,
+            ParticipantRole.HIRING_MANAGER,
+        ],
+    )
+    def test_participant_accepts_valid_role_string(self, role: ParticipantRole) -> None:
+        """Test Participant accepts valid role values."""
         participant = Participant(name="Test Person", role=role)
         assert participant.role == role
 
@@ -80,7 +87,10 @@ class TestParticipantRoleValidation:
     def test_participant_rejects_invalid_role(self) -> None:
         """Test Participant rejects invalid role value."""
         with pytest.raises(ValidationError) as exc_info:
-            Participant(name="Test Person", role="invalid_role")
+            Participant(
+                name="Test Person",
+                role="invalid_role",  # type: ignore[arg-type]
+            )
 
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("role",) for e in errors)
@@ -168,7 +178,7 @@ class TestParticipantEdgeCases:
         """Test Participant with unicode characters in name."""
         participant = Participant(
             name="田中太郎",
-            role="recruiter",
+            role=ParticipantRole.RECRUITER,
         )
         assert participant.name == "田中太郎"
 
@@ -177,7 +187,7 @@ class TestParticipantEdgeCases:
         long_email = "very.long.email.address" + ".subdomain" * 10 + "@company.com"
         participant = Participant(
             name="Test",
-            role="recruiter",
+            role=ParticipantRole.RECRUITER,
             email=long_email,
         )
         assert participant.email == long_email
@@ -186,8 +196,9 @@ class TestParticipantEdgeCases:
         """Test Participant with special characters in company name."""
         participant = Participant(
             name="Test",
-            role="recruiter",
+            role=ParticipantRole.RECRUITER,
             company="Company & Co. (Inc.) - Division #1",
         )
+        assert participant.company is not None
         assert "&" in participant.company
         assert "#" in participant.company

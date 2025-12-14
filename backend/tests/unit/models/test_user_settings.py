@@ -50,7 +50,7 @@ class TestUserSettingsCreation:
     def test_user_settings_missing_user_name_raises_error(self) -> None:
         """Test missing user_name raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            UserSettings(
+            UserSettings(  # type: ignore[call-arg]
                 user_email="john@example.com",
                 default_model="sonnet",
             )
@@ -61,7 +61,7 @@ class TestUserSettingsCreation:
     def test_user_settings_missing_user_email_raises_error(self) -> None:
         """Test missing user_email raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            UserSettings(
+            UserSettings(  # type: ignore[call-arg]
                 user_name="John Doe",
                 default_model="sonnet",
             )
@@ -72,7 +72,7 @@ class TestUserSettingsCreation:
     def test_user_settings_missing_default_model_raises_error(self) -> None:
         """Test missing default_model raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            UserSettings(
+            UserSettings(  # type: ignore[call-arg]
                 user_name="John Doe",
                 user_email="john@example.com",
             )
@@ -164,6 +164,7 @@ class TestUserSettingsValidation:
             default_model="sonnet",
             resume_path="C:\\Users\\John\\Documents\\resume.md",
         )
+        assert settings.resume_path is not None
         assert "C:" in settings.resume_path
 
 

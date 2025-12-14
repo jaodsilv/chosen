@@ -101,6 +101,7 @@ class TestConversationYamlRoundTrip:
         restored = Conversation.model_validate(loaded_data)
 
         assert restored.context_analysis is not None
+        assert original.context_analysis is not None
         assert restored.context_analysis.summary == original.context_analysis.summary
         assert (
             restored.context_analysis.sentiment_trend.initial
@@ -331,6 +332,7 @@ class TestYamlSpecialCases:
         loaded_data = yaml.safe_load(yaml_str)
         restored = Message.model_validate(loaded_data)
 
+        assert restored.subject is not None
         assert "$150K" in restored.subject
         assert "yes/no" in restored.body
         assert "true/false" in restored.body

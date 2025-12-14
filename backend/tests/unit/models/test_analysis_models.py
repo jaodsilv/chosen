@@ -40,7 +40,7 @@ class TestSentimentTrendCreation:
     def test_sentiment_trend_missing_initial_raises_error(self) -> None:
         """Test missing initial field raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            SentimentTrend(
+            SentimentTrend(  # type: ignore[call-arg]
                 current="positive",
                 direction="stable",
                 indicators=["Test"],
@@ -51,7 +51,7 @@ class TestSentimentTrendCreation:
     def test_sentiment_trend_missing_current_raises_error(self) -> None:
         """Test missing current field raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            SentimentTrend(
+            SentimentTrend(  # type: ignore[call-arg]
                 initial="positive",
                 direction="stable",
                 indicators=["Test"],
@@ -62,7 +62,7 @@ class TestSentimentTrendCreation:
     def test_sentiment_trend_missing_direction_raises_error(self) -> None:
         """Test missing direction field raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            SentimentTrend(
+            SentimentTrend(  # type: ignore[call-arg]
                 initial="positive",
                 current="positive",
                 indicators=["Test"],
@@ -73,7 +73,7 @@ class TestSentimentTrendCreation:
     def test_sentiment_trend_missing_indicators_raises_error(self) -> None:
         """Test missing indicators field raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            SentimentTrend(
+            SentimentTrend(  # type: ignore[call-arg]
                 initial="positive",
                 current="positive",
                 direction="stable",
@@ -164,14 +164,14 @@ class TestConversationStageCreation:
     def test_conversation_stage_missing_current_raises_error(self) -> None:
         """Test missing current field raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            ConversationStage(progression_quality="smooth")
+            ConversationStage(progression_quality="smooth")  # type: ignore[call-arg]
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("current",) for e in errors)
 
     def test_conversation_stage_missing_progression_quality_raises_error(self) -> None:
         """Test missing progression_quality raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            ConversationStage(current="initial_outreach")
+            ConversationStage(current="initial_outreach")  # type: ignore[call-arg]
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("progression_quality",) for e in errors)
 
@@ -324,10 +324,10 @@ class TestContextAnalysisCreation:
     ) -> None:
         """Test missing summary raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            ContextAnalysis(
-                sentiment_trend=sample_sentiment_trend_data,
-                conversation_stage=sample_conversation_stage_data,
-                action_items=sample_action_items_data,
+            ContextAnalysis(  # type: ignore[call-arg]
+                sentiment_trend=SentimentTrend(**sample_sentiment_trend_data),
+                conversation_stage=ConversationStage(**sample_conversation_stage_data),
+                action_items=ActionItems(**sample_action_items_data),
                 last_analyzed=fixed_datetime,
             )
         errors = exc_info.value.errors()
@@ -341,10 +341,10 @@ class TestContextAnalysisCreation:
     ) -> None:
         """Test missing sentiment_trend raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            ContextAnalysis(
+            ContextAnalysis(  # type: ignore[call-arg]
                 summary="Test summary",
-                conversation_stage=sample_conversation_stage_data,
-                action_items=sample_action_items_data,
+                conversation_stage=ConversationStage(**sample_conversation_stage_data),
+                action_items=ActionItems(**sample_action_items_data),
                 last_analyzed=fixed_datetime,
             )
         errors = exc_info.value.errors()
@@ -358,11 +358,11 @@ class TestContextAnalysisCreation:
     ) -> None:
         """Test missing last_analyzed raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            ContextAnalysis(
+            ContextAnalysis(  # type: ignore[call-arg]
                 summary="Test summary",
-                sentiment_trend=sample_sentiment_trend_data,
-                conversation_stage=sample_conversation_stage_data,
-                action_items=sample_action_items_data,
+                sentiment_trend=SentimentTrend(**sample_sentiment_trend_data),
+                conversation_stage=ConversationStage(**sample_conversation_stage_data),
+                action_items=ActionItems(**sample_action_items_data),
             )
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("last_analyzed",) for e in errors)
@@ -377,9 +377,9 @@ class TestContextAnalysisCreation:
         """Test patterns_detected and recommendations default to empty lists."""
         analysis = ContextAnalysis(
             summary="Test summary",
-            sentiment_trend=sample_sentiment_trend_data,
-            conversation_stage=sample_conversation_stage_data,
-            action_items=sample_action_items_data,
+            sentiment_trend=SentimentTrend(**sample_sentiment_trend_data),
+            conversation_stage=ConversationStage(**sample_conversation_stage_data),
+            action_items=ActionItems(**sample_action_items_data),
             last_analyzed=fixed_datetime,
         )
         assert analysis.patterns_detected == []

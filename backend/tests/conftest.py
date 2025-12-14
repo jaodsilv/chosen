@@ -1,7 +1,7 @@
 """Pytest configuration and fixtures."""
 
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, AsyncGenerator, Dict
 from uuid import UUID
 
 import pytest

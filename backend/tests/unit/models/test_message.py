@@ -51,7 +51,9 @@ class TestMessageCreation:
     def test_message_missing_timestamp_raises_error(self) -> None:
         """Test that missing timestamp raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            Message(from_name="Recruiter", body="Message body")
+            Message(  # type: ignore[call-arg]
+                from_name="Recruiter", body="Message body"
+            )
 
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("timestamp",) for e in errors)
@@ -61,7 +63,9 @@ class TestMessageCreation:
     ) -> None:
         """Test that missing from_name raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            Message(timestamp=fixed_datetime, body="Message body")
+            Message(  # type: ignore[call-arg]
+                timestamp=fixed_datetime, body="Message body"
+            )
 
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("from_name",) for e in errors)
@@ -69,7 +73,9 @@ class TestMessageCreation:
     def test_message_missing_body_raises_error(self, fixed_datetime: datetime) -> None:
         """Test that missing body raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            Message(timestamp=fixed_datetime, from_name="Recruiter")
+            Message(  # type: ignore[call-arg]
+                timestamp=fixed_datetime, from_name="Recruiter"
+            )
 
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("body",) for e in errors)
@@ -134,7 +140,7 @@ class TestMessageValidation:
     def test_timestamp_accepts_iso_string(self) -> None:
         """Test timestamp accepts ISO format string."""
         message = Message(
-            timestamp="2025-12-09T10:00:00Z",
+            timestamp="2025-12-09T10:00:00Z",  # type: ignore[arg-type]
             from_name="Recruiter",
             body="Message body",
         )
@@ -147,7 +153,7 @@ class TestMessageValidation:
         """Test timestamp rejects invalid datetime format."""
         with pytest.raises(ValidationError):
             Message(
-                timestamp="not-a-date",
+                timestamp="not-a-date",  # type: ignore[arg-type]
                 from_name="Recruiter",
                 body="Message body",
             )
@@ -311,6 +317,7 @@ class TestMessageEdgeCases:
             body="Body",
             subject='RE: "Senior Engineer" [URGENT] <action required>',
         )
+        assert message.subject is not None
         assert '"' in message.subject
         assert "[" in message.subject
         assert "<" in message.subject
