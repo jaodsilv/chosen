@@ -9,6 +9,7 @@ from app.models.analysis import (
     ConversationStage,
     JobFitScore,
     SentimentTrend,
+    SkillGap,
 )
 from app.models.conversation import Conversation
 from app.models.enums import ParticipantRole, Platform, ProcessStatus
@@ -31,6 +32,7 @@ __all__ = [
     "ActionItems",
     "ContextAnalysis",
     "JobFitScore",
+    "SkillGap",
     # Metrics
     "ResponseMetrics",
     # Main models

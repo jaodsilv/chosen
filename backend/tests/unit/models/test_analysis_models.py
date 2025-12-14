@@ -19,6 +19,7 @@ from app.models.analysis import (
     ContextAnalysis,
     ConversationStage,
     SentimentTrend,
+    SkillGap,
 )
 
 
@@ -487,3 +488,166 @@ class TestContextAnalysisSerialization:
         )
         assert restored.patterns_detected == original.patterns_detected
         assert restored.recommendations == original.recommendations
+
+
+@pytest.mark.unit
+class TestSentimentTrendLiteralValidation:
+    """Test suite for SentimentTrend Literal type validation."""
+
+    @pytest.mark.parametrize(
+        "field,invalid_value",
+        [
+            ("initial", "invalid_sentiment"),
+            ("initial", "happy"),
+            ("initial", "POSITIVE"),
+            ("current", "bad"),
+            ("current", ""),
+            ("direction", "up"),
+            ("direction", "down"),
+            ("direction", "STABLE"),
+        ],
+    )
+    def test_invalid_literal_values_rejected(
+        self, field: str, invalid_value: str
+    ) -> None:
+        """Test that invalid Literal values are rejected."""
+        valid_data = {
+            "initial": "positive",
+            "current": "neutral",
+            "direction": "stable",
+            "indicators": ["Test"],
+        }
+        valid_data[field] = invalid_value
+
+        with pytest.raises(ValidationError):
+            SentimentTrend(**valid_data)
+
+
+@pytest.mark.unit
+class TestConversationStageLiteralValidation:
+    """Test suite for ConversationStage Literal type validation."""
+
+    @pytest.mark.parametrize(
+        "invalid_value",
+        [
+            "invalid_quality",
+            "good",
+            "bad",
+            "SMOOTH",
+            "",
+        ],
+    )
+    def test_invalid_progression_quality_rejected(self, invalid_value: str) -> None:
+        """Test that invalid progression_quality values are rejected."""
+        with pytest.raises(ValidationError):
+            ConversationStage(
+                current="initial_outreach",
+                progression_quality=invalid_value,
+            )
+
+    @pytest.mark.parametrize(
+        "valid_value",
+        [
+            "smooth",
+            "stalled",
+            "problematic",
+            "unknown",
+        ],
+    )
+    def test_valid_progression_quality_accepted(self, valid_value: str) -> None:
+        """Test that valid progression_quality values are accepted."""
+        stage = ConversationStage(
+            current="initial_outreach",
+            progression_quality=valid_value,
+        )
+        assert stage.progression_quality == valid_value
+
+
+@pytest.mark.unit
+class TestSkillGapCreation:
+    """Test suite for SkillGap model creation."""
+
+    def test_skill_gap_with_all_fields(self) -> None:
+        """Test creating SkillGap with all fields."""
+        gap = SkillGap(
+            skill="Kubernetes",
+            severity="medium",
+            mitigation="Can learn quickly",
+        )
+        assert gap.skill == "Kubernetes"
+        assert gap.severity == "medium"
+        assert gap.mitigation == "Can learn quickly"
+
+    def test_skill_gap_with_minimal_fields(self) -> None:
+        """Test creating SkillGap with minimal fields (no mitigation)."""
+        gap = SkillGap(
+            skill="Docker",
+            severity="low",
+        )
+        assert gap.skill == "Docker"
+        assert gap.severity == "low"
+        assert gap.mitigation is None
+
+    def test_skill_gap_missing_skill_raises_error(self) -> None:
+        """Test missing skill field raises ValidationError."""
+        with pytest.raises(ValidationError) as exc_info:
+            SkillGap(severity="high")  # type: ignore[call-arg]
+        errors = exc_info.value.errors()
+        assert any(e["loc"] == ("skill",) for e in errors)
+
+    def test_skill_gap_missing_severity_raises_error(self) -> None:
+        """Test missing severity field raises ValidationError."""
+        with pytest.raises(ValidationError) as exc_info:
+            SkillGap(skill="Python")  # type: ignore[call-arg]
+        errors = exc_info.value.errors()
+        assert any(e["loc"] == ("severity",) for e in errors)
+
+    @pytest.mark.parametrize(
+        "severity",
+        ["low", "medium", "high"],
+    )
+    def test_skill_gap_valid_severity_values(self, severity: str) -> None:
+        """Test valid severity values are accepted."""
+        gap = SkillGap(skill="Test", severity=severity)
+        assert gap.severity == severity
+
+    @pytest.mark.parametrize(
+        "invalid_severity",
+        ["invalid", "critical", "LOW", "Medium", ""],
+    )
+    def test_skill_gap_invalid_severity_rejected(self, invalid_severity: str) -> None:
+        """Test invalid severity values are rejected."""
+        with pytest.raises(ValidationError):
+            SkillGap(skill="Test", severity=invalid_severity)
+
+
+@pytest.mark.unit
+class TestSkillGapSerialization:
+    """Test suite for SkillGap serialization."""
+
+    def test_skill_gap_to_dict(self) -> None:
+        """Test SkillGap.model_dump() produces correct dict."""
+        gap = SkillGap(
+            skill="Kubernetes",
+            severity="medium",
+            mitigation="Can learn quickly",
+        )
+        data = gap.model_dump()
+
+        assert data["skill"] == "Kubernetes"
+        assert data["severity"] == "medium"
+        assert data["mitigation"] == "Can learn quickly"
+
+    def test_skill_gap_round_trip(self) -> None:
+        """Test serialization/deserialization round trip."""
+        original = SkillGap(
+            skill="Docker",
+            severity="low",
+            mitigation="Has container experience",
+        )
+        json_str = original.model_dump_json()
+        restored = SkillGap.model_validate_json(json_str)
+
+        assert restored.skill == original.skill
+        assert restored.severity == original.severity
+        assert restored.mitigation == original.mitigation

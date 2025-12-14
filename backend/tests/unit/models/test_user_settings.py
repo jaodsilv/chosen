@@ -333,3 +333,85 @@ class TestUserSettingsEdgeCases:
 
         # Other instance should not be affected
         assert "key" not in settings2.preferences
+
+
+@pytest.mark.unit
+class TestUserSettingsEmailValidation:
+    """Test suite for UserSettings email validation."""
+
+    @pytest.mark.parametrize(
+        "invalid_email",
+        [
+            "not-an-email",
+            "@missing-local.com",
+            "missing-at-sign.com",
+            "missing.domain@",
+            "",
+            "spaces in@email.com",
+            "user@.com",
+        ],
+    )
+    def test_invalid_email_rejected(self, invalid_email: str) -> None:
+        """Test that invalid email addresses are rejected."""
+        with pytest.raises(ValidationError):
+            UserSettings(
+                user_name="John Doe",
+                user_email=invalid_email,
+                default_model="sonnet",
+            )
+
+    @pytest.mark.parametrize(
+        "valid_email",
+        [
+            "user@example.com",
+            "user.name@example.com",
+            "user+tag@example.com",
+            "user@subdomain.example.com",
+        ],
+    )
+    def test_valid_email_accepted(self, valid_email: str) -> None:
+        """Test that valid email addresses are accepted."""
+        settings = UserSettings(
+            user_name="John Doe",
+            user_email=valid_email,
+            default_model="sonnet",
+        )
+        assert settings.user_email == valid_email
+
+
+@pytest.mark.unit
+class TestUserSettingsDefaultModelValidation:
+    """Test suite for UserSettings default_model validation."""
+
+    @pytest.mark.parametrize(
+        "valid_model",
+        ["sonnet", "haiku", "opus"],
+    )
+    def test_valid_model_accepted(self, valid_model: str) -> None:
+        """Test that valid model names are accepted."""
+        settings = UserSettings(
+            user_name="John Doe",
+            user_email="john@example.com",
+            default_model=valid_model,
+        )
+        assert settings.default_model == valid_model
+
+    @pytest.mark.parametrize(
+        "invalid_model",
+        [
+            "gpt-4",
+            "claude",
+            "SONNET",
+            "Haiku",
+            "",
+            "invalid",
+        ],
+    )
+    def test_invalid_model_rejected(self, invalid_model: str) -> None:
+        """Test that invalid model names are rejected."""
+        with pytest.raises(ValidationError):
+            UserSettings(
+                user_name="John Doe",
+                user_email="john@example.com",
+                default_model=invalid_model,
+            )

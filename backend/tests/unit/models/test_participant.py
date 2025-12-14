@@ -202,3 +202,55 @@ class TestParticipantEdgeCases:
         assert participant.company is not None
         assert "&" in participant.company
         assert "#" in participant.company
+
+
+@pytest.mark.unit
+class TestParticipantEmailValidation:
+    """Test suite for Participant email validation."""
+
+    @pytest.mark.parametrize(
+        "invalid_email",
+        [
+            "not-an-email",
+            "@missing-local.com",
+            "missing-at-sign.com",
+            "missing.domain@",
+            "spaces in@email.com",
+            "user@.com",
+        ],
+    )
+    def test_invalid_email_rejected(self, invalid_email: str) -> None:
+        """Test that invalid email addresses are rejected."""
+        with pytest.raises(ValidationError):
+            Participant(
+                name="Test",
+                role=ParticipantRole.RECRUITER,
+                email=invalid_email,
+            )
+
+    @pytest.mark.parametrize(
+        "valid_email",
+        [
+            "user@example.com",
+            "user.name@example.com",
+            "user+tag@example.com",
+            "user@subdomain.example.com",
+        ],
+    )
+    def test_valid_email_accepted(self, valid_email: str) -> None:
+        """Test that valid email addresses are accepted."""
+        participant = Participant(
+            name="Test",
+            role=ParticipantRole.RECRUITER,
+            email=valid_email,
+        )
+        assert participant.email == valid_email
+
+    def test_none_email_accepted(self) -> None:
+        """Test that None email is accepted (optional field)."""
+        participant = Participant(
+            name="Test",
+            role=ParticipantRole.RECRUITER,
+            email=None,
+        )
+        assert participant.email is None

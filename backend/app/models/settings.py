@@ -4,9 +4,9 @@ This module contains the UserSettings model for storing user
 preferences and configuration.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserSettings(BaseModel):
@@ -21,7 +21,7 @@ class UserSettings(BaseModel):
     """
 
     user_name: str
-    user_email: str
-    default_model: str
+    user_email: EmailStr
+    default_model: Literal["sonnet", "haiku", "opus"]
     resume_path: Optional[str] = None
     preferences: Dict[str, Any] = Field(default_factory=dict)

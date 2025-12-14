@@ -9,9 +9,15 @@ This module contains models for conversation analysis:
 """
 
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
+
+# Type aliases for sentiment values
+SentimentValue = Literal["positive", "neutral", "negative"]
+SentimentDirection = Literal["improving", "stable", "declining"]
+ProgressionQuality = Literal["smooth", "stalled", "problematic", "unknown"]
+GapSeverity = Literal["low", "medium", "high"]
 
 
 class SentimentTrend(BaseModel):
@@ -24,9 +30,9 @@ class SentimentTrend(BaseModel):
         indicators: List of specific indicators that inform the analysis.
     """
 
-    initial: str
-    current: str
-    direction: str
+    initial: SentimentValue
+    current: SentimentValue
+    direction: SentimentDirection
     indicators: List[str]
 
 
@@ -39,7 +45,7 @@ class ConversationStage(BaseModel):
     """
 
     current: str
-    progression_quality: str
+    progression_quality: ProgressionQuality
 
 
 class ActionItems(BaseModel):
@@ -76,6 +82,20 @@ class ContextAnalysis(BaseModel):
     last_analyzed: datetime
 
 
+class SkillGap(BaseModel):
+    """Represents a gap between candidate skills and job requirements.
+
+    Attributes:
+        skill: The skill that is lacking or needs improvement.
+        severity: How critical the gap is (low, medium, high).
+        mitigation: Optional suggestion for addressing the gap.
+    """
+
+    skill: str
+    severity: GapSeverity
+    mitigation: Optional[str] = None
+
+
 class JobFitScore(BaseModel):
     """Assessment of job fit with detailed scoring.
 
@@ -87,7 +107,7 @@ class JobFitScore(BaseModel):
         preferred_skills_score: Match on preferred skills (0-100).
         experience_match: Experience level match (0-100).
         strengths: List of identified strengths.
-        gaps: List of identified gaps with skill, severity, and mitigation.
+        gaps: List of identified skill gaps.
         breakdown: Detailed score breakdown by category.
     """
 
@@ -96,7 +116,7 @@ class JobFitScore(BaseModel):
     preferred_skills_score: float
     experience_match: float
     strengths: List[str] = Field(default_factory=list)
-    gaps: List[Dict[str, Any]] = Field(default_factory=list)
+    gaps: List[SkillGap] = Field(default_factory=list)
     breakdown: Dict[str, float] = Field(default_factory=dict)
 
     @field_validator(

@@ -6,7 +6,7 @@ This module contains tests for JobFitScore:
     - preferred_skills_score (float, 0-100)
     - experience_match (float, 0-100)
     - strengths (List[str])
-    - gaps (List[Dict[str, Any]])
+    - gaps (List[SkillGap])
     - breakdown (Dict[str, float])
 """
 
@@ -40,7 +40,10 @@ class TestJobFitScoreCreation:
         )
         assert score.experience_match == sample_job_fit_score_data["experience_match"]
         assert score.strengths == sample_job_fit_score_data["strengths"]
-        assert score.gaps == sample_job_fit_score_data["gaps"]
+        # Compare gaps by converting SkillGap objects to dicts
+        assert [gap.model_dump() for gap in score.gaps] == sample_job_fit_score_data[
+            "gaps"
+        ]
         assert score.breakdown == sample_job_fit_score_data["breakdown"]
 
     def test_job_fit_score_missing_overall_score_raises_error(self) -> None:
@@ -183,9 +186,9 @@ class TestJobFitScoreGapsStructure:
         """Test gaps accepts list of dicts with skill/severity/mitigation."""
         score = JobFitScore(**sample_job_fit_score_data)
         assert len(score.gaps) == 1
-        assert score.gaps[0]["skill"] == "Kubernetes"
-        assert score.gaps[0]["severity"] == "medium"
-        assert "mitigation" in score.gaps[0]
+        assert score.gaps[0].skill == "Kubernetes"
+        assert score.gaps[0].severity == "medium"
+        assert score.gaps[0].mitigation is not None
 
     def test_gaps_with_multiple_entries(self) -> None:
         """Test gaps with multiple gap entries."""

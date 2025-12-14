@@ -6,7 +6,7 @@ involved in a conversation.
 
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 from app.models.enums import ParticipantRole
 
@@ -25,5 +25,5 @@ class Participant(BaseModel):
 
     name: str
     role: ParticipantRole
-    email: Optional[str] = None
+    email: Optional[EmailStr] = None
     company: Optional[str] = None

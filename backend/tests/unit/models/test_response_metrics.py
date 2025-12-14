@@ -11,6 +11,7 @@ import json
 from typing import Any, Dict
 
 import pytest
+from pydantic import ValidationError
 
 from app.models.metrics import ResponseMetrics
 
@@ -251,3 +252,37 @@ class TestResponseMetricsEdgeCases:
         )
         assert metrics.recruiter_message_count == 100
         assert metrics.candidate_message_count == 1
+
+
+@pytest.mark.unit
+class TestResponseMetricsNegativeValidation:
+    """Test suite for ResponseMetrics negative value rejection."""
+
+    @pytest.mark.parametrize(
+        "field,value",
+        [
+            ("recruiter_avg_hours", -1.0),
+            ("recruiter_avg_hours", -0.1),
+            ("recruiter_avg_hours", -100.0),
+            ("candidate_avg_hours", -1.0),
+            ("candidate_avg_hours", -0.5),
+        ],
+    )
+    def test_negative_avg_hours_rejected(self, field: str, value: float) -> None:
+        """Test that negative avg_hours values are rejected."""
+        with pytest.raises(ValidationError):
+            ResponseMetrics(**{field: value})
+
+    @pytest.mark.parametrize(
+        "field,value",
+        [
+            ("recruiter_message_count", -1),
+            ("recruiter_message_count", -100),
+            ("candidate_message_count", -1),
+            ("candidate_message_count", -50),
+        ],
+    )
+    def test_negative_message_count_rejected(self, field: str, value: int) -> None:
+        """Test that negative message_count values are rejected."""
+        with pytest.raises(ValidationError):
+            ResponseMetrics(**{field: value})
