@@ -6,13 +6,14 @@ data directory to prevent path traversal attacks.
 
 import os
 import tempfile
-from typing import Any, Dict
+from typing import Any, Generator
 from unittest.mock import patch
 
 import pytest
 from pydantic import ValidationError
 
 from app.models.conversation import Conversation
+from app.models.enums import Platform
 from app.models.message import Message
 from app.models.settings import UserSettings
 
@@ -21,13 +22,13 @@ class TestPathTraversalPrevention:
     """Test that path traversal patterns are rejected."""
 
     @pytest.fixture
-    def temp_data_dir(self) -> str:
+    def temp_data_dir(self) -> Generator[str, None, None]:
         """Create a temporary data directory for testing."""
         with tempfile.TemporaryDirectory() as tmpdir:
             yield tmpdir
 
     @pytest.fixture
-    def mock_settings(self, temp_data_dir: str) -> Any:
+    def mock_settings(self, temp_data_dir: str) -> Generator[Any, None, None]:
         """Mock get_settings to use temporary data directory."""
 
         class MockSettings:
@@ -141,13 +142,13 @@ class TestConversationPathValidation:
     """Test path validation for Conversation filepath fields."""
 
     @pytest.fixture
-    def temp_data_dir(self) -> str:
+    def temp_data_dir(self) -> Generator[str, None, None]:
         """Create a temporary data directory for testing."""
         with tempfile.TemporaryDirectory() as tmpdir:
             yield tmpdir
 
     @pytest.fixture
-    def mock_settings(self, temp_data_dir: str) -> Any:
+    def mock_settings(self, temp_data_dir: str) -> Generator[Any, None, None]:
         """Mock get_settings to use temporary data directory."""
 
         class MockSettings:
@@ -170,7 +171,7 @@ class TestConversationPathValidation:
         """Conversation.job_description_filepath rejects path traversal."""
         with pytest.raises(ValidationError) as exc_info:
             Conversation(
-                platform="linkedin",
+                platform=Platform.LINKEDIN,
                 recruiter_name="Test Recruiter",
                 job_description_filepath=unsafe_path,
             )
@@ -190,7 +191,7 @@ class TestConversationPathValidation:
         """Conversation.resume_filepath rejects path traversal."""
         with pytest.raises(ValidationError) as exc_info:
             Conversation(
-                platform="linkedin",
+                platform=Platform.LINKEDIN,
                 recruiter_name="Test Recruiter",
                 resume_filepath=unsafe_path,
             )
@@ -199,7 +200,7 @@ class TestConversationPathValidation:
     def test_filepath_accepts_safe_paths(self, mock_settings: Any) -> None:
         """Conversation filepath fields accept safe relative paths."""
         conversation = Conversation(
-            platform="linkedin",
+            platform=Platform.LINKEDIN,
             recruiter_name="Test Recruiter",
             job_description_filepath="jobs/description.md",
             resume_filepath="resumes/my_resume.pdf",
@@ -210,7 +211,7 @@ class TestConversationPathValidation:
     def test_filepath_accepts_none(self, mock_settings: Any) -> None:
         """Conversation filepath fields accept None values."""
         conversation = Conversation(
-            platform="linkedin",
+            platform=Platform.LINKEDIN,
             recruiter_name="Test Recruiter",
             job_description_filepath=None,
             resume_filepath=None,
@@ -223,13 +224,13 @@ class TestMessageAttachmentsValidation:
     """Test path validation for Message.attachments field."""
 
     @pytest.fixture
-    def temp_data_dir(self) -> str:
+    def temp_data_dir(self) -> Generator[str, None, None]:
         """Create a temporary data directory for testing."""
         with tempfile.TemporaryDirectory() as tmpdir:
             yield tmpdir
 
     @pytest.fixture
-    def mock_settings(self, temp_data_dir: str) -> Any:
+    def mock_settings(self, temp_data_dir: str) -> Generator[Any, None, None]:
         """Mock get_settings to use temporary data directory."""
 
         class MockSettings:
@@ -296,13 +297,13 @@ class TestPathValidationEdgeCases:
     """Test edge cases in path validation."""
 
     @pytest.fixture
-    def temp_data_dir(self) -> str:
+    def temp_data_dir(self) -> Generator[str, None, None]:
         """Create a temporary data directory for testing."""
         with tempfile.TemporaryDirectory() as tmpdir:
             yield tmpdir
 
     @pytest.fixture
-    def mock_settings(self, temp_data_dir: str) -> Any:
+    def mock_settings(self, temp_data_dir: str) -> Generator[Any, None, None]:
         """Mock get_settings to use temporary data directory."""
 
         class MockSettings:
