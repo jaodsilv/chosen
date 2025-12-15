@@ -132,7 +132,7 @@ class TestUserSettingsValidation:
         settings = UserSettings(
             user_name="John Doe",
             user_email="john@example.com",
-            default_model=model,
+            default_model=model,  # type: ignore[arg-type]
         )
         assert settings.default_model == model
 
@@ -392,7 +392,7 @@ class TestUserSettingsDefaultModelValidation:
         settings = UserSettings(
             user_name="John Doe",
             user_email="john@example.com",
-            default_model=valid_model,
+            default_model=valid_model,  # type: ignore[arg-type]
         )
         assert settings.default_model == valid_model
 
@@ -413,5 +413,5 @@ class TestUserSettingsDefaultModelValidation:
             UserSettings(
                 user_name="John Doe",
                 user_email="john@example.com",
-                default_model=invalid_model,
+                default_model=invalid_model,  # type: ignore[arg-type]
             )

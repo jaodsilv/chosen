@@ -198,9 +198,9 @@ class TestJobFitScoreGapsStructure:
             preferred_skills_score=50.0,
             experience_match=75.0,
             gaps=[
-                {"skill": "Kubernetes", "severity": "high"},
-                {"skill": "GraphQL", "severity": "medium"},
-                {"skill": "Terraform", "severity": "low"},
+                {"skill": "Kubernetes", "severity": "high"},  # type: ignore[list-item]
+                {"skill": "GraphQL", "severity": "medium"},  # type: ignore[list-item]
+                {"skill": "Terraform", "severity": "low"},  # type: ignore[list-item]
             ],
         )
         assert len(score.gaps) == 3

@@ -106,9 +106,9 @@ class TestSentimentTrendCreation:
     ) -> None:
         """Test various sentiment combinations."""
         trend = SentimentTrend(
-            initial=initial,
-            current=current,
-            direction=direction,
+            initial=initial,  # type: ignore[arg-type]
+            current=current,  # type: ignore[arg-type]
+            direction=direction,  # type: ignore[arg-type]
             indicators=["Test indicator"],
         )
         assert trend.initial == initial
@@ -520,7 +520,7 @@ class TestSentimentTrendLiteralValidation:
         valid_data[field] = invalid_value
 
         with pytest.raises(ValidationError):
-            SentimentTrend(**valid_data)
+            SentimentTrend(**valid_data)  # type: ignore[arg-type]
 
 
 @pytest.mark.unit
@@ -542,7 +542,7 @@ class TestConversationStageLiteralValidation:
         with pytest.raises(ValidationError):
             ConversationStage(
                 current="initial_outreach",
-                progression_quality=invalid_value,
+                progression_quality=invalid_value,  # type: ignore[arg-type]
             )
 
     @pytest.mark.parametrize(
@@ -558,7 +558,7 @@ class TestConversationStageLiteralValidation:
         """Test that valid progression_quality values are accepted."""
         stage = ConversationStage(
             current="initial_outreach",
-            progression_quality=valid_value,
+            progression_quality=valid_value,  # type: ignore[arg-type]
         )
         assert stage.progression_quality == valid_value
 
@@ -608,7 +608,7 @@ class TestSkillGapCreation:
     )
     def test_skill_gap_valid_severity_values(self, severity: str) -> None:
         """Test valid severity values are accepted."""
-        gap = SkillGap(skill="Test", severity=severity)
+        gap = SkillGap(skill="Test", severity=severity)  # type: ignore[arg-type]
         assert gap.severity == severity
 
     @pytest.mark.parametrize(
@@ -618,7 +618,7 @@ class TestSkillGapCreation:
     def test_skill_gap_invalid_severity_rejected(self, invalid_severity: str) -> None:
         """Test invalid severity values are rejected."""
         with pytest.raises(ValidationError):
-            SkillGap(skill="Test", severity=invalid_severity)
+            SkillGap(skill="Test", severity=invalid_severity)  # type: ignore[arg-type]
 
 
 @pytest.mark.unit

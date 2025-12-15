@@ -271,7 +271,7 @@ class TestResponseMetricsNegativeValidation:
     def test_negative_avg_hours_rejected(self, field: str, value: float) -> None:
         """Test that negative avg_hours values are rejected."""
         with pytest.raises(ValidationError):
-            ResponseMetrics(**{field: value})
+            ResponseMetrics(**{field: value})  # type: ignore[arg-type]
 
     @pytest.mark.parametrize(
         "field,value",
