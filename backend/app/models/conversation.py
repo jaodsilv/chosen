@@ -8,12 +8,13 @@ from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.analysis import ContextAnalysis, JobFitScore
 from app.models.enums import Platform, ProcessStatus
 from app.models.message import Message
 from app.models.metrics import ResponseMetrics
+from app.models.validators import validate_path_in_data_dir
 
 
 class Conversation(BaseModel):
@@ -64,3 +65,9 @@ class Conversation(BaseModel):
     archived_at: Optional[datetime] = None
     archive_reason: Optional[str] = None
     related_conversation_ids: List[str] = Field(default_factory=list)
+
+    @field_validator("job_description_filepath", "resume_filepath")
+    @classmethod
+    def validate_filepath(cls, v: Optional[str]) -> Optional[str]:
+        """Validate that filepaths are within the data directory."""
+        return validate_path_in_data_dir(v)

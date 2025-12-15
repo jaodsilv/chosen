@@ -146,26 +146,25 @@ class TestUserSettingsValidation:
         )
         assert settings.resume_path == "./data/resume.md"
 
-    def test_resume_path_accepts_absolute_path(self) -> None:
-        """Test resume_path accepts absolute file paths."""
+    def test_resume_path_accepts_subdirectory_path(self) -> None:
+        """Test resume_path accepts paths in subdirectories."""
         settings = UserSettings(
             user_name="John Doe",
             user_email="john@example.com",
             default_model="sonnet",
-            resume_path="/home/user/documents/resume.md",
+            resume_path="documents/resume.md",
         )
-        assert settings.resume_path == "/home/user/documents/resume.md"
+        assert settings.resume_path == "documents/resume.md"
 
-    def test_resume_path_accepts_windows_path(self) -> None:
-        """Test resume_path accepts Windows file paths."""
+    def test_resume_path_accepts_simple_filename(self) -> None:
+        """Test resume_path accepts simple filename."""
         settings = UserSettings(
             user_name="John Doe",
             user_email="john@example.com",
             default_model="sonnet",
-            resume_path="C:\\Users\\John\\Documents\\resume.md",
+            resume_path="resume.md",
         )
-        assert settings.resume_path is not None
-        assert "C:" in settings.resume_path
+        assert settings.resume_path == "resume.md"
 
 
 @pytest.mark.unit

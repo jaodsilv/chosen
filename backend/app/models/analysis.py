@@ -41,7 +41,8 @@ class ConversationStage(BaseModel):
 
     Attributes:
         current: The current conversation stage (e.g., initial_outreach).
-        progression_quality: Assessment of how well the conversation is progressing.
+        progression_quality: Assessment of how well the conversation
+            is progressing.
     """
 
     current: str

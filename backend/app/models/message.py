@@ -7,7 +7,9 @@ in a conversation thread.
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from app.models.validators import validate_attachment_paths
 
 
 class Message(BaseModel):
@@ -28,3 +30,9 @@ class Message(BaseModel):
     subject: Optional[str] = None
     body: str
     attachments: List[str] = Field(default_factory=list)
+
+    @field_validator("attachments")
+    @classmethod
+    def validate_attachments(cls, v: List[str]) -> List[str]:
+        """Validate that all attachment paths are within the data directory."""
+        return validate_attachment_paths(v)

@@ -6,7 +6,9 @@ preferences and configuration.
 
 from typing import Any, Dict, Literal, Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
+
+from app.models.validators import validate_path_in_data_dir
 
 
 class UserSettings(BaseModel):
@@ -25,3 +27,9 @@ class UserSettings(BaseModel):
     default_model: Literal["sonnet", "haiku", "opus"]
     resume_path: Optional[str] = None
     preferences: Dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("resume_path")
+    @classmethod
+    def validate_resume_path(cls, v: Optional[str]) -> Optional[str]:
+        """Validate that resume_path is within the data directory."""
+        return validate_path_in_data_dir(v)
