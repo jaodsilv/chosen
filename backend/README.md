@@ -39,9 +39,10 @@ uvicorn app.main:app --reload
 ```
 
 The API will be available at:
-- API: http://localhost:8000
-- Swagger UI: http://localhost:8000/api/docs
-- ReDoc: http://localhost:8000/api/redoc
+
+- API: <http://localhost:8000>
+- Swagger UI: <http://localhost:8000/api/docs>
+- ReDoc: <http://localhost:8000/api/redoc>
 
 ### Health Check
 
@@ -51,7 +52,7 @@ curl http://localhost:8000/health
 
 ## Project Structure
 
-```
+```text
 backend/
 ├── app/
 │   ├── __init__.py
@@ -120,6 +121,7 @@ pytest -m e2e
 ### Pre-commit Hooks
 
 Pre-commit hooks are installed during setup. They run automatically on commit:
+
 - trailing whitespace removal
 - end-of-file fixer
 - YAML validation
@@ -129,6 +131,7 @@ Pre-commit hooks are installed during setup. They run automatically on commit:
 - mypy (type checking)
 
 To run manually:
+
 ```bash
 pre-commit run --all-files
 ```
@@ -154,11 +157,11 @@ Configuration is managed via environment variables. See `.env.example` for avail
 | GET | `/api/redoc` | ReDoc |
 
 Additional endpoints will be added as the application develops:
+
 - `/api/v1/conversations` - Conversation management
 - `/api/v1/messages` - Message operations
 - `/api/v1/analysis` - Context analysis
 - `/api/v1/settings` - User settings
-
 
 ## Design Decisions
 

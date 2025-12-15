@@ -44,6 +44,7 @@ ENV/
 htmlcov/
 .tox/
 coverage.xml
+coverage.json
 
 # FastAPI
 .cache/
@@ -69,6 +70,9 @@ logs/
 *.tmp
 *.temp
 .tmp/
+
+# Local notes
+.thoughts/
 
 # mypy
 .mypy_cache/
