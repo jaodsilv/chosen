@@ -21,9 +21,7 @@ from app.models.settings import UserSettings
 class TestConversationYamlRoundTrip:
     """Test suite for Conversation YAML round-trip serialization."""
 
-    def test_conversation_to_yaml_and_back(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_to_yaml_and_back(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test Conversation serializes to YAML and deserializes correctly."""
         original = Conversation(**sample_conversation_data)
 
@@ -40,9 +38,7 @@ class TestConversationYamlRoundTrip:
         assert restored.company == original.company
         assert restored.recruiter_name == original.recruiter_name
 
-    def test_conversation_yaml_preserves_datetime(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_yaml_preserves_datetime(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test datetime fields survive YAML round-trip."""
         original = Conversation(**sample_conversation_data)
 
@@ -56,9 +52,7 @@ class TestConversationYamlRoundTrip:
         assert restored.created_at.month == original.created_at.month
         assert restored.created_at.day == original.created_at.day
 
-    def test_conversation_yaml_preserves_uuid(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_yaml_preserves_uuid(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test UUID field survives YAML round-trip."""
         original = Conversation(**sample_conversation_data)
 
@@ -69,9 +63,7 @@ class TestConversationYamlRoundTrip:
 
         assert restored.id == original.id
 
-    def test_conversation_yaml_preserves_enums(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_yaml_preserves_enums(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test enum fields survive YAML round-trip."""
         original = Conversation(**sample_conversation_data)
 
@@ -103,10 +95,7 @@ class TestConversationYamlRoundTrip:
         assert restored.context_analysis is not None
         assert original.context_analysis is not None
         assert restored.context_analysis.summary == original.context_analysis.summary
-        assert (
-            restored.context_analysis.sentiment_trend.initial
-            == original.context_analysis.sentiment_trend.initial
-        )
+        assert restored.context_analysis.sentiment_trend.initial == original.context_analysis.sentiment_trend.initial
 
     def test_parse_existing_yaml_format(self, sample_yaml_conversation: str) -> None:
         """Test parsing existing YAML format from SYSTEM-DESIGN."""
@@ -126,9 +115,7 @@ class TestConversationYamlRoundTrip:
 class TestMessageYamlRoundTrip:
     """Test suite for Message YAML round-trip serialization."""
 
-    def test_message_to_yaml_and_back(
-        self, sample_message_data: Dict[str, Any]
-    ) -> None:
+    def test_message_to_yaml_and_back(self, sample_message_data: Dict[str, Any]) -> None:
         """Test Message serializes to YAML and deserializes correctly."""
         original = Message(**sample_message_data)
 
@@ -170,9 +157,7 @@ Recruiter"""
         assert "\n" in restored.body
         assert "Bullet points" in restored.body
 
-    def test_message_list_in_yaml(
-        self, sample_message_data: Dict[str, Any], fixed_datetime: datetime
-    ) -> None:
+    def test_message_list_in_yaml(self, sample_message_data: Dict[str, Any], fixed_datetime: datetime) -> None:
         """Test list of messages serializes correctly to YAML."""
         messages = [
             Message(**sample_message_data),
@@ -197,9 +182,7 @@ Recruiter"""
 class TestAnalysisYamlRoundTrip:
     """Test suite for analysis models YAML round-trip."""
 
-    def test_context_analysis_yaml_round_trip(
-        self, sample_context_analysis_data: Dict[str, Any]
-    ) -> None:
+    def test_context_analysis_yaml_round_trip(self, sample_context_analysis_data: Dict[str, Any]) -> None:
         """Test ContextAnalysis YAML round-trip."""
         original = ContextAnalysis(**sample_context_analysis_data)
 
@@ -210,14 +193,10 @@ class TestAnalysisYamlRoundTrip:
 
         assert restored.summary == original.summary
         assert restored.sentiment_trend.initial == original.sentiment_trend.initial
-        assert (
-            restored.conversation_stage.current == original.conversation_stage.current
-        )
+        assert restored.conversation_stage.current == original.conversation_stage.current
         assert restored.patterns_detected == original.patterns_detected
 
-    def test_job_fit_score_yaml_round_trip(
-        self, sample_job_fit_score_data: Dict[str, Any]
-    ) -> None:
+    def test_job_fit_score_yaml_round_trip(self, sample_job_fit_score_data: Dict[str, Any]) -> None:
         """Test JobFitScore YAML round-trip."""
         original = JobFitScore(**sample_job_fit_score_data)
 
@@ -232,9 +211,7 @@ class TestAnalysisYamlRoundTrip:
         assert restored.gaps == original.gaps
         assert restored.breakdown == original.breakdown
 
-    def test_response_metrics_yaml_round_trip(
-        self, sample_response_metrics_data: Dict[str, Any]
-    ) -> None:
+    def test_response_metrics_yaml_round_trip(self, sample_response_metrics_data: Dict[str, Any]) -> None:
         """Test ResponseMetrics YAML round-trip."""
         original = ResponseMetrics(**sample_response_metrics_data)
 
@@ -252,9 +229,7 @@ class TestAnalysisYamlRoundTrip:
 class TestUserSettingsYamlRoundTrip:
     """Test suite for UserSettings YAML round-trip."""
 
-    def test_user_settings_yaml_round_trip(
-        self, sample_user_settings_data: Dict[str, Any]
-    ) -> None:
+    def test_user_settings_yaml_round_trip(self, sample_user_settings_data: Dict[str, Any]) -> None:
         """Test UserSettings YAML round-trip."""
         original = UserSettings(**sample_user_settings_data)
 
@@ -274,9 +249,7 @@ class TestUserSettingsYamlRoundTrip:
 class TestYamlSpecialCases:
     """Test suite for YAML special cases."""
 
-    def test_yaml_with_none_values(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_yaml_with_none_values(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test YAML handles None values correctly."""
         original = Conversation(**sample_conversation_minimal_data)
 
@@ -288,9 +261,7 @@ class TestYamlSpecialCases:
         assert restored.company is None
         assert restored.context_analysis is None
 
-    def test_yaml_with_empty_lists(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_yaml_with_empty_lists(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test YAML handles empty lists correctly."""
         original = Conversation(**sample_conversation_minimal_data)
 

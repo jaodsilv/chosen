@@ -21,9 +21,7 @@ from app.models.participant import Participant
 class TestParticipantCreation:
     """Test suite for Participant model creation."""
 
-    def test_participant_with_all_fields(
-        self, sample_participant_data: Dict[str, Any]
-    ) -> None:
+    def test_participant_with_all_fields(self, sample_participant_data: Dict[str, Any]) -> None:
         """Test creating Participant with all fields."""
         participant = Participant(**sample_participant_data)
 
@@ -32,9 +30,7 @@ class TestParticipantCreation:
         assert participant.email == sample_participant_data["email"]
         assert participant.company == sample_participant_data["company"]
 
-    def test_participant_with_required_fields_only(
-        self, sample_participant_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_participant_with_required_fields_only(self, sample_participant_minimal_data: Dict[str, Any]) -> None:
         """Test creating Participant with only required fields."""
         participant = Participant(**sample_participant_minimal_data)
 
@@ -79,9 +75,7 @@ class TestParticipantRoleValidation:
 
     def test_participant_accepts_role_enum(self) -> None:
         """Test Participant accepts ParticipantRole enum directly."""
-        participant = Participant(
-            name="Test Person", role=ParticipantRole.HIRING_MANAGER
-        )
+        participant = Participant(name="Test Person", role=ParticipantRole.HIRING_MANAGER)
         assert participant.role == "hiring_manager"
 
     def test_participant_rejects_invalid_role(self) -> None:
@@ -100,16 +94,12 @@ class TestParticipantRoleValidation:
 class TestParticipantDefaults:
     """Test suite for Participant default values."""
 
-    def test_email_defaults_to_none(
-        self, sample_participant_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_email_defaults_to_none(self, sample_participant_minimal_data: Dict[str, Any]) -> None:
         """Test email defaults to None."""
         participant = Participant(**sample_participant_minimal_data)
         assert participant.email is None
 
-    def test_company_defaults_to_none(
-        self, sample_participant_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_company_defaults_to_none(self, sample_participant_minimal_data: Dict[str, Any]) -> None:
         """Test company defaults to None."""
         participant = Participant(**sample_participant_minimal_data)
         assert participant.company is None
@@ -128,9 +118,7 @@ class TestParticipantSerialization:
         assert data["email"] == sample_participant_data["email"]
         assert data["company"] == sample_participant_data["company"]
 
-    def test_participant_role_serializes_as_string(
-        self, sample_participant_data: Dict[str, Any]
-    ) -> None:
+    def test_participant_role_serializes_as_string(self, sample_participant_data: Dict[str, Any]) -> None:
         """Test role serializes as string value not enum name."""
         participant = Participant(**sample_participant_data)
         data = participant.model_dump()
@@ -147,18 +135,14 @@ class TestParticipantSerialization:
         assert parsed["name"] == sample_participant_data["name"]
         assert parsed["role"] == "recruiter"
 
-    def test_participant_from_dict(
-        self, sample_participant_data: Dict[str, Any]
-    ) -> None:
+    def test_participant_from_dict(self, sample_participant_data: Dict[str, Any]) -> None:
         """Test creating Participant from dictionary."""
         participant = Participant.model_validate(sample_participant_data)
 
         assert participant.name == sample_participant_data["name"]
         assert participant.role == ParticipantRole.RECRUITER
 
-    def test_participant_round_trip(
-        self, sample_participant_data: Dict[str, Any]
-    ) -> None:
+    def test_participant_round_trip(self, sample_participant_data: Dict[str, Any]) -> None:
         """Test serialization/deserialization round trip."""
         original = Participant(**sample_participant_data)
         json_str = original.model_dump_json()

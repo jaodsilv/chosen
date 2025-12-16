@@ -23,27 +23,17 @@ from app.models.analysis import JobFitScore
 class TestJobFitScoreCreation:
     """Test suite for JobFitScore model creation."""
 
-    def test_job_fit_score_with_all_fields(
-        self, sample_job_fit_score_data: Dict[str, Any]
-    ) -> None:
+    def test_job_fit_score_with_all_fields(self, sample_job_fit_score_data: Dict[str, Any]) -> None:
         """Test creating JobFitScore with all fields."""
         score = JobFitScore(**sample_job_fit_score_data)
 
         assert score.overall_score == sample_job_fit_score_data["overall_score"]
-        assert (
-            score.required_skills_score
-            == sample_job_fit_score_data["required_skills_score"]
-        )
-        assert (
-            score.preferred_skills_score
-            == sample_job_fit_score_data["preferred_skills_score"]
-        )
+        assert score.required_skills_score == sample_job_fit_score_data["required_skills_score"]
+        assert score.preferred_skills_score == sample_job_fit_score_data["preferred_skills_score"]
         assert score.experience_match == sample_job_fit_score_data["experience_match"]
         assert score.strengths == sample_job_fit_score_data["strengths"]
         # Compare gaps by converting SkillGap objects to dicts
-        assert [gap.model_dump() for gap in score.gaps] == sample_job_fit_score_data[
-            "gaps"
-        ]
+        assert [gap.model_dump() for gap in score.gaps] == sample_job_fit_score_data["gaps"]
         assert score.breakdown == sample_job_fit_score_data["breakdown"]
 
     def test_job_fit_score_missing_overall_score_raises_error(self) -> None:
@@ -133,9 +123,7 @@ class TestJobFitScoreRangeValidation:
         with pytest.raises(ValidationError):
             JobFitScore(**data)
 
-    def test_invalid_score_data_fixture(
-        self, invalid_score_data: Dict[str, Any]
-    ) -> None:
+    def test_invalid_score_data_fixture(self, invalid_score_data: Dict[str, Any]) -> None:
         """Test that invalid_score_data fixture is rejected."""
         with pytest.raises(ValidationError):
             JobFitScore(**invalid_score_data)
@@ -180,9 +168,7 @@ class TestJobFitScoreDefaults:
 class TestJobFitScoreGapsStructure:
     """Test suite for JobFitScore gaps field structure."""
 
-    def test_gaps_accepts_valid_dict_structure(
-        self, sample_job_fit_score_data: Dict[str, Any]
-    ) -> None:
+    def test_gaps_accepts_valid_dict_structure(self, sample_job_fit_score_data: Dict[str, Any]) -> None:
         """Test gaps accepts list of dicts with skill/severity/mitigation."""
         score = JobFitScore(**sample_job_fit_score_data)
         assert len(score.gaps) == 1
@@ -216,9 +202,7 @@ class TestJobFitScoreGapsStructure:
         )
         assert score.gaps == []
 
-    def test_gaps_serialization(
-        self, sample_job_fit_score_data: Dict[str, Any]
-    ) -> None:
+    def test_gaps_serialization(self, sample_job_fit_score_data: Dict[str, Any]) -> None:
         """Test gaps serializes correctly to JSON/dict."""
         score = JobFitScore(**sample_job_fit_score_data)
         data = score.model_dump()
@@ -232,9 +216,7 @@ class TestJobFitScoreGapsStructure:
 class TestJobFitScoreBreakdown:
     """Test suite for JobFitScore breakdown field."""
 
-    def test_breakdown_accepts_dict_with_float_values(
-        self, sample_job_fit_score_data: Dict[str, Any]
-    ) -> None:
+    def test_breakdown_accepts_dict_with_float_values(self, sample_job_fit_score_data: Dict[str, Any]) -> None:
         """Test breakdown accepts dict with float values."""
         score = JobFitScore(**sample_job_fit_score_data)
 
@@ -275,9 +257,7 @@ class TestJobFitScoreBreakdown:
 class TestJobFitScoreSerialization:
     """Test suite for JobFitScore serialization."""
 
-    def test_job_fit_score_to_dict(
-        self, sample_job_fit_score_data: Dict[str, Any]
-    ) -> None:
+    def test_job_fit_score_to_dict(self, sample_job_fit_score_data: Dict[str, Any]) -> None:
         """Test JobFitScore.model_dump() produces correct dict."""
         score = JobFitScore(**sample_job_fit_score_data)
         data = score.model_dump()
@@ -287,9 +267,7 @@ class TestJobFitScoreSerialization:
         assert data["gaps"] == sample_job_fit_score_data["gaps"]
         assert data["breakdown"] == sample_job_fit_score_data["breakdown"]
 
-    def test_job_fit_score_to_json(
-        self, sample_job_fit_score_data: Dict[str, Any]
-    ) -> None:
+    def test_job_fit_score_to_json(self, sample_job_fit_score_data: Dict[str, Any]) -> None:
         """Test JobFitScore.model_dump_json() produces valid JSON."""
         score = JobFitScore(**sample_job_fit_score_data)
         json_str = score.model_dump_json()
@@ -297,17 +275,13 @@ class TestJobFitScoreSerialization:
         parsed = json.loads(json_str)
         assert parsed["overall_score"] == sample_job_fit_score_data["overall_score"]
 
-    def test_job_fit_score_from_dict(
-        self, sample_job_fit_score_data: Dict[str, Any]
-    ) -> None:
+    def test_job_fit_score_from_dict(self, sample_job_fit_score_data: Dict[str, Any]) -> None:
         """Test creating JobFitScore from dictionary."""
         score = JobFitScore.model_validate(sample_job_fit_score_data)
 
         assert score.overall_score == sample_job_fit_score_data["overall_score"]
 
-    def test_job_fit_score_round_trip(
-        self, sample_job_fit_score_data: Dict[str, Any]
-    ) -> None:
+    def test_job_fit_score_round_trip(self, sample_job_fit_score_data: Dict[str, Any]) -> None:
         """Test serialization/deserialization round trip."""
         original = JobFitScore(**sample_job_fit_score_data)
         json_str = original.model_dump_json()

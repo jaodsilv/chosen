@@ -43,10 +43,7 @@ def validate_path_in_data_dir(path: Optional[str]) -> Optional[str]:
     try:
         resolved.relative_to(data_dir)
     except ValueError:
-        raise ValueError(
-            f"Path must be within the data directory. "
-            f"'{path}' resolves outside allowed directory."
-        )
+        raise ValueError(f"Path must be within the data directory. " f"'{path}' resolves outside allowed directory.")
 
     return path
 

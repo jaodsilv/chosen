@@ -48,9 +48,7 @@ class TestPathTraversalPrevention:
             "..\\..\\..\\sensitive.txt",
         ],
     )
-    def test_resume_path_rejects_traversal(
-        self, mock_settings: Any, unsafe_path: str
-    ) -> None:
+    def test_resume_path_rejects_traversal(self, mock_settings: Any, unsafe_path: str) -> None:
         """UserSettings.resume_path rejects path traversal patterns."""
         with pytest.raises(ValidationError) as exc_info:
             UserSettings(
@@ -70,9 +68,7 @@ class TestPathTraversalPrevention:
         ],
     )
     @pytest.mark.skipif(os.name == "nt", reason="Unix absolute paths on Unix only")
-    def test_resume_path_rejects_unix_absolute_paths(
-        self, mock_settings: Any, unsafe_path: str
-    ) -> None:
+    def test_resume_path_rejects_unix_absolute_paths(self, mock_settings: Any, unsafe_path: str) -> None:
         """UserSettings.resume_path rejects absolute Unix paths outside data dir."""
         with pytest.raises(ValidationError) as exc_info:
             UserSettings(
@@ -92,9 +88,7 @@ class TestPathTraversalPrevention:
         ],
     )
     @pytest.mark.skipif(os.name != "nt", reason="Windows paths on Windows only")
-    def test_resume_path_rejects_windows_absolute_paths(
-        self, mock_settings: Any, unsafe_path: str
-    ) -> None:
+    def test_resume_path_rejects_windows_absolute_paths(self, mock_settings: Any, unsafe_path: str) -> None:
         """UserSettings.resume_path rejects absolute Windows paths outside data dir."""
         with pytest.raises(ValidationError) as exc_info:
             UserSettings(
@@ -115,9 +109,7 @@ class TestPathTraversalPrevention:
             "a/b/c/deeply/nested/file.txt",
         ],
     )
-    def test_resume_path_accepts_safe_relative_paths(
-        self, mock_settings: Any, safe_path: str
-    ) -> None:
+    def test_resume_path_accepts_safe_relative_paths(self, mock_settings: Any, safe_path: str) -> None:
         """UserSettings.resume_path accepts relative paths within data dir."""
         settings = UserSettings(
             user_name="test",
@@ -165,9 +157,7 @@ class TestConversationPathValidation:
             "data/../../../secret.txt",
         ],
     )
-    def test_job_description_filepath_rejects_traversal(
-        self, mock_settings: Any, unsafe_path: str
-    ) -> None:
+    def test_job_description_filepath_rejects_traversal(self, mock_settings: Any, unsafe_path: str) -> None:
         """Conversation.job_description_filepath rejects path traversal."""
         with pytest.raises(ValidationError) as exc_info:
             Conversation(
@@ -185,9 +175,7 @@ class TestConversationPathValidation:
             "data/../../../secret.txt",
         ],
     )
-    def test_resume_filepath_rejects_traversal(
-        self, mock_settings: Any, unsafe_path: str
-    ) -> None:
+    def test_resume_filepath_rejects_traversal(self, mock_settings: Any, unsafe_path: str) -> None:
         """Conversation.resume_filepath rejects path traversal."""
         with pytest.raises(ValidationError) as exc_info:
             Conversation(
@@ -246,9 +234,7 @@ class TestMessageAttachmentsValidation:
 
         return datetime(2025, 12, 9, 10, 0, 0, tzinfo=timezone.utc)
 
-    def test_attachments_rejects_traversal_in_any_item(
-        self, mock_settings: Any, fixed_datetime: Any
-    ) -> None:
+    def test_attachments_rejects_traversal_in_any_item(self, mock_settings: Any, fixed_datetime: Any) -> None:
         """Message.attachments rejects any item with path traversal."""
         with pytest.raises(ValidationError) as exc_info:
             Message(
@@ -263,9 +249,7 @@ class TestMessageAttachmentsValidation:
             )
         assert "outside allowed directory" in str(exc_info.value).lower()
 
-    def test_attachments_accepts_safe_paths(
-        self, mock_settings: Any, fixed_datetime: Any
-    ) -> None:
+    def test_attachments_accepts_safe_paths(self, mock_settings: Any, fixed_datetime: Any) -> None:
         """Message.attachments accepts list of safe relative paths."""
         message = Message(
             timestamp=fixed_datetime,
@@ -280,9 +264,7 @@ class TestMessageAttachmentsValidation:
         assert len(message.attachments) == 3
         assert message.attachments[0] == "job_description.pdf"
 
-    def test_attachments_accepts_empty_list(
-        self, mock_settings: Any, fixed_datetime: Any
-    ) -> None:
+    def test_attachments_accepts_empty_list(self, mock_settings: Any, fixed_datetime: Any) -> None:
         """Message.attachments accepts empty list."""
         message = Message(
             timestamp=fixed_datetime,
@@ -319,9 +301,7 @@ class TestPathValidationEdgeCases:
             "..%5C..%5Cwindows",  # URL encoded backslash
         ],
     )
-    def test_resume_path_with_encoded_traversal(
-        self, mock_settings: Any, encoded_traversal: str
-    ) -> None:
+    def test_resume_path_with_encoded_traversal(self, mock_settings: Any, encoded_traversal: str) -> None:
         """UserSettings.resume_path handles URL-encoded paths.
 
         Note: These should be handled at the API layer, but the model

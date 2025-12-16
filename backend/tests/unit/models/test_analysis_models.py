@@ -27,9 +27,7 @@ from app.models.analysis import (
 class TestSentimentTrendCreation:
     """Test suite for SentimentTrend model."""
 
-    def test_sentiment_trend_with_all_fields(
-        self, sample_sentiment_trend_data: Dict[str, Any]
-    ) -> None:
+    def test_sentiment_trend_with_all_fields(self, sample_sentiment_trend_data: Dict[str, Any]) -> None:
         """Test creating SentimentTrend with all fields."""
         trend = SentimentTrend(**sample_sentiment_trend_data)
 
@@ -101,9 +99,7 @@ class TestSentimentTrendCreation:
             ("negative", "neutral", "improving"),
         ],
     )
-    def test_sentiment_trend_various_combinations(
-        self, initial: str, current: str, direction: str
-    ) -> None:
+    def test_sentiment_trend_various_combinations(self, initial: str, current: str, direction: str) -> None:
         """Test various sentiment combinations."""
         trend = SentimentTrend(
             initial=initial,  # type: ignore[arg-type]
@@ -120,9 +116,7 @@ class TestSentimentTrendCreation:
 class TestSentimentTrendSerialization:
     """Test suite for SentimentTrend serialization."""
 
-    def test_sentiment_trend_to_dict(
-        self, sample_sentiment_trend_data: Dict[str, Any]
-    ) -> None:
+    def test_sentiment_trend_to_dict(self, sample_sentiment_trend_data: Dict[str, Any]) -> None:
         """Test SentimentTrend.model_dump() produces correct dict."""
         trend = SentimentTrend(**sample_sentiment_trend_data)
         data = trend.model_dump()
@@ -132,9 +126,7 @@ class TestSentimentTrendSerialization:
         assert data["direction"] == sample_sentiment_trend_data["direction"]
         assert data["indicators"] == sample_sentiment_trend_data["indicators"]
 
-    def test_sentiment_trend_round_trip(
-        self, sample_sentiment_trend_data: Dict[str, Any]
-    ) -> None:
+    def test_sentiment_trend_round_trip(self, sample_sentiment_trend_data: Dict[str, Any]) -> None:
         """Test serialization/deserialization round trip."""
         original = SentimentTrend(**sample_sentiment_trend_data)
         json_str = original.model_dump_json()
@@ -150,17 +142,12 @@ class TestSentimentTrendSerialization:
 class TestConversationStageCreation:
     """Test suite for ConversationStage model."""
 
-    def test_conversation_stage_with_all_fields(
-        self, sample_conversation_stage_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_stage_with_all_fields(self, sample_conversation_stage_data: Dict[str, Any]) -> None:
         """Test creating ConversationStage with all fields."""
         stage = ConversationStage(**sample_conversation_stage_data)
 
         assert stage.current == sample_conversation_stage_data["current"]
-        assert (
-            stage.progression_quality
-            == sample_conversation_stage_data["progression_quality"]
-        )
+        assert stage.progression_quality == sample_conversation_stage_data["progression_quality"]
 
     def test_conversation_stage_missing_current_raises_error(self) -> None:
         """Test missing current field raises ValidationError."""
@@ -200,22 +187,15 @@ class TestConversationStageCreation:
 class TestConversationStageSerialization:
     """Test suite for ConversationStage serialization."""
 
-    def test_conversation_stage_to_dict(
-        self, sample_conversation_stage_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_stage_to_dict(self, sample_conversation_stage_data: Dict[str, Any]) -> None:
         """Test ConversationStage.model_dump() produces correct dict."""
         stage = ConversationStage(**sample_conversation_stage_data)
         data = stage.model_dump()
 
         assert data["current"] == sample_conversation_stage_data["current"]
-        assert (
-            data["progression_quality"]
-            == sample_conversation_stage_data["progression_quality"]
-        )
+        assert data["progression_quality"] == sample_conversation_stage_data["progression_quality"]
 
-    def test_conversation_stage_round_trip(
-        self, sample_conversation_stage_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_stage_round_trip(self, sample_conversation_stage_data: Dict[str, Any]) -> None:
         """Test serialization/deserialization round trip."""
         original = ConversationStage(**sample_conversation_stage_data)
         json_str = original.model_dump_json()
@@ -229,9 +209,7 @@ class TestConversationStageSerialization:
 class TestActionItemsCreation:
     """Test suite for ActionItems model."""
 
-    def test_action_items_with_all_fields(
-        self, sample_action_items_data: Dict[str, Any]
-    ) -> None:
+    def test_action_items_with_all_fields(self, sample_action_items_data: Dict[str, Any]) -> None:
         """Test creating ActionItems with all fields."""
         items = ActionItems(**sample_action_items_data)
 
@@ -270,23 +248,15 @@ class TestActionItemsCreation:
 class TestActionItemsSerialization:
     """Test suite for ActionItems serialization."""
 
-    def test_action_items_to_dict(
-        self, sample_action_items_data: Dict[str, Any]
-    ) -> None:
+    def test_action_items_to_dict(self, sample_action_items_data: Dict[str, Any]) -> None:
         """Test ActionItems.model_dump() produces correct dict."""
         items = ActionItems(**sample_action_items_data)
         data = items.model_dump()
 
-        assert (
-            data["candidate_pending"] == sample_action_items_data["candidate_pending"]
-        )
-        assert (
-            data["recruiter_pending"] == sample_action_items_data["recruiter_pending"]
-        )
+        assert data["candidate_pending"] == sample_action_items_data["candidate_pending"]
+        assert data["recruiter_pending"] == sample_action_items_data["recruiter_pending"]
 
-    def test_action_items_round_trip(
-        self, sample_action_items_data: Dict[str, Any]
-    ) -> None:
+    def test_action_items_round_trip(self, sample_action_items_data: Dict[str, Any]) -> None:
         """Test serialization/deserialization round trip."""
         original = ActionItems(**sample_action_items_data)
         json_str = original.model_dump_json()
@@ -300,20 +270,13 @@ class TestActionItemsSerialization:
 class TestContextAnalysisCreation:
     """Test suite for ContextAnalysis model."""
 
-    def test_context_analysis_with_all_fields(
-        self, sample_context_analysis_data: Dict[str, Any]
-    ) -> None:
+    def test_context_analysis_with_all_fields(self, sample_context_analysis_data: Dict[str, Any]) -> None:
         """Test creating ContextAnalysis with all fields."""
         analysis = ContextAnalysis(**sample_context_analysis_data)
 
         assert analysis.summary == sample_context_analysis_data["summary"]
-        assert (
-            analysis.patterns_detected
-            == sample_context_analysis_data["patterns_detected"]
-        )
-        assert (
-            analysis.recommendations == sample_context_analysis_data["recommendations"]
-        )
+        assert analysis.patterns_detected == sample_context_analysis_data["patterns_detected"]
+        assert analysis.recommendations == sample_context_analysis_data["recommendations"]
         assert analysis.last_analyzed == sample_context_analysis_data["last_analyzed"]
 
     def test_context_analysis_missing_summary_raises_error(
@@ -391,9 +354,7 @@ class TestContextAnalysisCreation:
 class TestContextAnalysisNested:
     """Test suite for ContextAnalysis nested model handling."""
 
-    def test_context_analysis_accepts_nested_dicts(
-        self, sample_context_analysis_data: Dict[str, Any]
-    ) -> None:
+    def test_context_analysis_accepts_nested_dicts(self, sample_context_analysis_data: Dict[str, Any]) -> None:
         """Test ContextAnalysis accepts nested dictionaries for sub-models."""
         analysis = ContextAnalysis(**sample_context_analysis_data)
 
@@ -426,9 +387,7 @@ class TestContextAnalysisNested:
         assert analysis.conversation_stage == stage
         assert analysis.action_items == items
 
-    def test_context_analysis_serializes_nested_models(
-        self, sample_context_analysis_data: Dict[str, Any]
-    ) -> None:
+    def test_context_analysis_serializes_nested_models(self, sample_context_analysis_data: Dict[str, Any]) -> None:
         """Test ContextAnalysis serializes nested models correctly."""
         analysis = ContextAnalysis(**sample_context_analysis_data)
         data = analysis.model_dump()
@@ -447,25 +406,16 @@ class TestContextAnalysisNested:
 class TestContextAnalysisSerialization:
     """Test suite for ContextAnalysis serialization."""
 
-    def test_context_analysis_to_dict(
-        self, sample_context_analysis_data: Dict[str, Any]
-    ) -> None:
+    def test_context_analysis_to_dict(self, sample_context_analysis_data: Dict[str, Any]) -> None:
         """Test ContextAnalysis.model_dump() produces correct dict."""
         analysis = ContextAnalysis(**sample_context_analysis_data)
         data = analysis.model_dump()
 
         assert data["summary"] == sample_context_analysis_data["summary"]
-        assert (
-            data["patterns_detected"]
-            == sample_context_analysis_data["patterns_detected"]
-        )
-        assert (
-            data["recommendations"] == sample_context_analysis_data["recommendations"]
-        )
+        assert data["patterns_detected"] == sample_context_analysis_data["patterns_detected"]
+        assert data["recommendations"] == sample_context_analysis_data["recommendations"]
 
-    def test_context_analysis_to_json(
-        self, sample_context_analysis_data: Dict[str, Any]
-    ) -> None:
+    def test_context_analysis_to_json(self, sample_context_analysis_data: Dict[str, Any]) -> None:
         """Test ContextAnalysis.model_dump_json() produces valid JSON."""
         analysis = ContextAnalysis(**sample_context_analysis_data)
         json_str = analysis.model_dump_json()
@@ -473,9 +423,7 @@ class TestContextAnalysisSerialization:
         parsed = json.loads(json_str)
         assert parsed["summary"] == sample_context_analysis_data["summary"]
 
-    def test_context_analysis_round_trip(
-        self, sample_context_analysis_data: Dict[str, Any]
-    ) -> None:
+    def test_context_analysis_round_trip(self, sample_context_analysis_data: Dict[str, Any]) -> None:
         """Test serialization/deserialization round trip."""
         original = ContextAnalysis(**sample_context_analysis_data)
         json_str = original.model_dump_json()
@@ -483,9 +431,7 @@ class TestContextAnalysisSerialization:
 
         assert restored.summary == original.summary
         assert restored.sentiment_trend.initial == original.sentiment_trend.initial
-        assert (
-            restored.conversation_stage.current == original.conversation_stage.current
-        )
+        assert restored.conversation_stage.current == original.conversation_stage.current
         assert restored.patterns_detected == original.patterns_detected
         assert restored.recommendations == original.recommendations
 
@@ -507,9 +453,7 @@ class TestSentimentTrendLiteralValidation:
             ("direction", "STABLE"),
         ],
     )
-    def test_invalid_literal_values_rejected(
-        self, field: str, invalid_value: str
-    ) -> None:
+    def test_invalid_literal_values_rejected(self, field: str, invalid_value: str) -> None:
         """Test that invalid Literal values are rejected."""
         valid_data = {
             "initial": "positive",

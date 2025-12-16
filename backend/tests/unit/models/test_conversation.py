@@ -23,9 +23,7 @@ from app.models.metrics import ResponseMetrics
 class TestConversationCreation:
     """Test suite for Conversation model creation."""
 
-    def test_conversation_with_all_fields(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_with_all_fields(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test creating Conversation with all fields populated."""
         conv = Conversation(**sample_conversation_data)
 
@@ -40,9 +38,7 @@ class TestConversationCreation:
         assert len(conv.messages) == 1
         assert conv.archived == sample_conversation_data["archived"]
 
-    def test_conversation_with_minimal_fields(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_with_minimal_fields(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test creating Conversation with only required fields."""
         conv = Conversation(**sample_conversation_minimal_data)
 
@@ -76,53 +72,39 @@ class TestConversationCreation:
 class TestConversationDefaults:
     """Test suite for Conversation default values."""
 
-    def test_company_defaults_to_none(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_company_defaults_to_none(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test company defaults to None."""
         conv = Conversation(**sample_conversation_minimal_data)
         assert conv.company is None
 
-    def test_recruiting_company_defaults_to_none(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_recruiting_company_defaults_to_none(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test recruiting_company defaults to None."""
         conv = Conversation(**sample_conversation_minimal_data)
         assert conv.recruiting_company is None
 
-    def test_process_status_defaults_to_new(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_process_status_defaults_to_new(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test process_status defaults to ProcessStatus.NEW."""
         conv = Conversation(**sample_conversation_minimal_data)
         assert conv.process_status == ProcessStatus.NEW
 
-    def test_context_defaults_to_empty_list(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_context_defaults_to_empty_list(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test context defaults to empty list."""
         conv = Conversation(**sample_conversation_minimal_data)
         assert conv.context == []
 
-    def test_messages_defaults_to_empty_list(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_messages_defaults_to_empty_list(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test messages defaults to empty list."""
         conv = Conversation(**sample_conversation_minimal_data)
         assert conv.messages == []
 
-    def test_analysis_fields_default_to_none(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_analysis_fields_default_to_none(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test context_analysis, fit_score, response_metrics default to None."""
         conv = Conversation(**sample_conversation_minimal_data)
         assert conv.context_analysis is None
         assert conv.fit_score is None
         assert conv.response_metrics is None
 
-    def test_archived_defaults_to_false(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_archived_defaults_to_false(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test archived defaults to False."""
         conv = Conversation(**sample_conversation_minimal_data)
         assert conv.archived is False
@@ -148,9 +130,7 @@ class TestConversationPlatformValidation:
         conv = Conversation(platform=platform, recruiter_name="Test Recruiter")
         assert conv.platform == platform
 
-    def test_conversation_rejects_invalid_platform(
-        self, invalid_platform_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_rejects_invalid_platform(self, invalid_platform_data: Dict[str, Any]) -> None:
         """Test Conversation rejects invalid platform value."""
         with pytest.raises(ValidationError) as exc_info:
             Conversation(**invalid_platform_data)
@@ -205,9 +185,7 @@ class TestConversationStatusValidation:
 class TestConversationNestedModels:
     """Test suite for Conversation nested model handling."""
 
-    def test_conversation_with_nested_messages(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_with_nested_messages(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test Conversation with nested Message models."""
         conv = Conversation(**sample_conversation_data)
 
@@ -243,9 +221,7 @@ class TestConversationNestedModels:
         conv = Conversation(**data)
 
         assert isinstance(conv.fit_score, JobFitScore)
-        assert (
-            conv.fit_score.overall_score == sample_job_fit_score_data["overall_score"]
-        )
+        assert conv.fit_score.overall_score == sample_job_fit_score_data["overall_score"]
 
     def test_conversation_with_response_metrics(
         self,
@@ -260,27 +236,20 @@ class TestConversationNestedModels:
         conv = Conversation(**data)
 
         assert isinstance(conv.response_metrics, ResponseMetrics)
-        assert (
-            conv.response_metrics.recruiter_message_count
-            == sample_response_metrics_data["recruiter_message_count"]
-        )
+        assert conv.response_metrics.recruiter_message_count == sample_response_metrics_data["recruiter_message_count"]
 
 
 @pytest.mark.unit
 class TestConversationUUIDGeneration:
     """Test suite for Conversation UUID auto-generation."""
 
-    def test_conversation_auto_generates_id(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_auto_generates_id(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test Conversation auto-generates UUID id."""
         conv = Conversation(**sample_conversation_minimal_data)
         assert conv.id is not None
         assert len(conv.id) > 0
 
-    def test_conversation_id_is_valid_uuid(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_id_is_valid_uuid(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test auto-generated id is valid UUID."""
         conv = Conversation(**sample_conversation_minimal_data)
         # Should not raise
@@ -307,25 +276,19 @@ class TestConversationUUIDGeneration:
 class TestConversationTimestampGeneration:
     """Test suite for Conversation timestamp auto-generation."""
 
-    def test_conversation_auto_generates_created_at(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_auto_generates_created_at(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test Conversation auto-generates created_at timestamp."""
         conv = Conversation(**sample_conversation_minimal_data)
         assert conv.created_at is not None
         assert isinstance(conv.created_at, datetime)
 
-    def test_conversation_auto_generates_updated_at(
-        self, sample_conversation_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_auto_generates_updated_at(self, sample_conversation_minimal_data: Dict[str, Any]) -> None:
         """Test Conversation auto-generates updated_at timestamp."""
         conv = Conversation(**sample_conversation_minimal_data)
         assert conv.updated_at is not None
         assert isinstance(conv.updated_at, datetime)
 
-    def test_conversation_respects_provided_timestamps(
-        self, fixed_datetime: datetime
-    ) -> None:
+    def test_conversation_respects_provided_timestamps(self, fixed_datetime: datetime) -> None:
         """Test Conversation uses provided timestamps when given."""
         conv = Conversation(
             platform=Platform.LINKEDIN,
@@ -341,9 +304,7 @@ class TestConversationTimestampGeneration:
 class TestConversationSerialization:
     """Test suite for Conversation serialization."""
 
-    def test_conversation_to_dict(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_to_dict(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test Conversation.model_dump() produces correct dict."""
         conv = Conversation(**sample_conversation_data)
         data = conv.model_dump()
@@ -352,9 +313,7 @@ class TestConversationSerialization:
         assert data["company"] == sample_conversation_data["company"]
         assert data["recruiter_name"] == sample_conversation_data["recruiter_name"]
 
-    def test_conversation_to_json(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_to_json(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test Conversation.model_dump_json() produces valid JSON."""
         conv = Conversation(**sample_conversation_data)
         json_str = conv.model_dump_json()
@@ -363,9 +322,7 @@ class TestConversationSerialization:
         assert parsed["id"] == sample_conversation_data["id"]
         assert parsed["company"] == sample_conversation_data["company"]
 
-    def test_conversation_enums_serialize_as_strings(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_enums_serialize_as_strings(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test platform and process_status serialize as string values."""
         conv = Conversation(**sample_conversation_data)
         data = conv.model_dump()
@@ -374,9 +331,7 @@ class TestConversationSerialization:
         assert data["platform"] == "linkedin"
         assert data["process_status"] == "new"
 
-    def test_conversation_from_dict(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_from_dict(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test creating Conversation from dictionary."""
         conv = Conversation.model_validate(sample_conversation_data)
 
@@ -397,14 +352,9 @@ class TestConversationSerialization:
         serialized = conv.model_dump()
 
         assert isinstance(serialized["context_analysis"], dict)
-        assert (
-            serialized["context_analysis"]["summary"]
-            == sample_context_analysis_data["summary"]
-        )
+        assert serialized["context_analysis"]["summary"] == sample_context_analysis_data["summary"]
 
-    def test_conversation_round_trip(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_round_trip(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test serialization/deserialization round trip."""
         original = Conversation(**sample_conversation_data)
         json_str = original.model_dump_json()
@@ -422,9 +372,7 @@ class TestConversationSerialization:
 class TestConversationConfigOptions:
     """Test suite for Conversation Config (use_enum_values, etc)."""
 
-    def test_use_enum_values_enabled(
-        self, sample_conversation_data: Dict[str, Any]
-    ) -> None:
+    def test_use_enum_values_enabled(self, sample_conversation_data: Dict[str, Any]) -> None:
         """Test use_enum_values=True in Config."""
         conv = Conversation(**sample_conversation_data)
         data = conv.model_dump()

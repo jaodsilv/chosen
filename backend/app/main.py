@@ -26,10 +26,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
     # Startup
-    logger.info(
-        f"Starting {settings.app_name} API v{settings.app_version} "
-        f"in {settings.env} mode"
-    )
+    logger.info(f"Starting {settings.app_name} API v{settings.app_version} " f"in {settings.env} mode")
     # Initialize agent system, load configurations, verify data directories
     # These will be implemented as the application grows
     yield

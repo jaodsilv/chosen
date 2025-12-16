@@ -20,32 +20,16 @@ from app.models.metrics import ResponseMetrics
 class TestResponseMetricsCreation:
     """Test suite for ResponseMetrics model creation."""
 
-    def test_response_metrics_with_all_fields(
-        self, sample_response_metrics_data: Dict[str, Any]
-    ) -> None:
+    def test_response_metrics_with_all_fields(self, sample_response_metrics_data: Dict[str, Any]) -> None:
         """Test creating ResponseMetrics with all fields."""
         metrics = ResponseMetrics(**sample_response_metrics_data)
 
-        assert (
-            metrics.recruiter_avg_hours
-            == sample_response_metrics_data["recruiter_avg_hours"]
-        )
-        assert (
-            metrics.candidate_avg_hours
-            == sample_response_metrics_data["candidate_avg_hours"]
-        )
-        assert (
-            metrics.recruiter_message_count
-            == sample_response_metrics_data["recruiter_message_count"]
-        )
-        assert (
-            metrics.candidate_message_count
-            == sample_response_metrics_data["candidate_message_count"]
-        )
+        assert metrics.recruiter_avg_hours == sample_response_metrics_data["recruiter_avg_hours"]
+        assert metrics.candidate_avg_hours == sample_response_metrics_data["candidate_avg_hours"]
+        assert metrics.recruiter_message_count == sample_response_metrics_data["recruiter_message_count"]
+        assert metrics.candidate_message_count == sample_response_metrics_data["candidate_message_count"]
 
-    def test_response_metrics_with_none_avg_hours(
-        self, sample_response_metrics_partial_data: Dict[str, Any]
-    ) -> None:
+    def test_response_metrics_with_none_avg_hours(self, sample_response_metrics_partial_data: Dict[str, Any]) -> None:
         """Test ResponseMetrics with None for avg_hours fields."""
         metrics = ResponseMetrics(**sample_response_metrics_partial_data)
 
@@ -141,46 +125,25 @@ class TestResponseMetricsValidation:
 class TestResponseMetricsSerialization:
     """Test suite for ResponseMetrics serialization."""
 
-    def test_response_metrics_to_dict(
-        self, sample_response_metrics_data: Dict[str, Any]
-    ) -> None:
+    def test_response_metrics_to_dict(self, sample_response_metrics_data: Dict[str, Any]) -> None:
         """Test ResponseMetrics.model_dump() produces correct dict."""
         metrics = ResponseMetrics(**sample_response_metrics_data)
         data = metrics.model_dump()
 
-        assert (
-            data["recruiter_avg_hours"]
-            == sample_response_metrics_data["recruiter_avg_hours"]
-        )
-        assert (
-            data["candidate_avg_hours"]
-            == sample_response_metrics_data["candidate_avg_hours"]
-        )
-        assert (
-            data["recruiter_message_count"]
-            == sample_response_metrics_data["recruiter_message_count"]
-        )
-        assert (
-            data["candidate_message_count"]
-            == sample_response_metrics_data["candidate_message_count"]
-        )
+        assert data["recruiter_avg_hours"] == sample_response_metrics_data["recruiter_avg_hours"]
+        assert data["candidate_avg_hours"] == sample_response_metrics_data["candidate_avg_hours"]
+        assert data["recruiter_message_count"] == sample_response_metrics_data["recruiter_message_count"]
+        assert data["candidate_message_count"] == sample_response_metrics_data["candidate_message_count"]
 
-    def test_response_metrics_to_json(
-        self, sample_response_metrics_data: Dict[str, Any]
-    ) -> None:
+    def test_response_metrics_to_json(self, sample_response_metrics_data: Dict[str, Any]) -> None:
         """Test ResponseMetrics.model_dump_json() produces valid JSON."""
         metrics = ResponseMetrics(**sample_response_metrics_data)
         json_str = metrics.model_dump_json()
 
         parsed = json.loads(json_str)
-        assert (
-            parsed["recruiter_avg_hours"]
-            == sample_response_metrics_data["recruiter_avg_hours"]
-        )
+        assert parsed["recruiter_avg_hours"] == sample_response_metrics_data["recruiter_avg_hours"]
 
-    def test_response_metrics_none_values_in_json(
-        self, sample_response_metrics_partial_data: Dict[str, Any]
-    ) -> None:
+    def test_response_metrics_none_values_in_json(self, sample_response_metrics_partial_data: Dict[str, Any]) -> None:
         """Test None values serialize correctly in JSON."""
         metrics = ResponseMetrics(**sample_response_metrics_partial_data)
         json_str = metrics.model_dump_json()
@@ -189,20 +152,13 @@ class TestResponseMetricsSerialization:
         assert parsed["recruiter_avg_hours"] is None
         assert parsed["candidate_avg_hours"] == 5.5
 
-    def test_response_metrics_from_dict(
-        self, sample_response_metrics_data: Dict[str, Any]
-    ) -> None:
+    def test_response_metrics_from_dict(self, sample_response_metrics_data: Dict[str, Any]) -> None:
         """Test creating ResponseMetrics from dictionary."""
         metrics = ResponseMetrics.model_validate(sample_response_metrics_data)
 
-        assert (
-            metrics.recruiter_avg_hours
-            == sample_response_metrics_data["recruiter_avg_hours"]
-        )
+        assert metrics.recruiter_avg_hours == sample_response_metrics_data["recruiter_avg_hours"]
 
-    def test_response_metrics_round_trip(
-        self, sample_response_metrics_data: Dict[str, Any]
-    ) -> None:
+    def test_response_metrics_round_trip(self, sample_response_metrics_data: Dict[str, Any]) -> None:
         """Test serialization/deserialization round trip."""
         original = ResponseMetrics(**sample_response_metrics_data)
         json_str = original.model_dump_json()

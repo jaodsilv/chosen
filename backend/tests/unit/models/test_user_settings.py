@@ -21,9 +21,7 @@ from app.models.settings import UserSettings
 class TestUserSettingsCreation:
     """Test suite for UserSettings model creation."""
 
-    def test_user_settings_with_all_fields(
-        self, sample_user_settings_data: Dict[str, Any]
-    ) -> None:
+    def test_user_settings_with_all_fields(self, sample_user_settings_data: Dict[str, Any]) -> None:
         """Test creating UserSettings with all fields."""
         settings = UserSettings(**sample_user_settings_data)
 
@@ -171,9 +169,7 @@ class TestUserSettingsValidation:
 class TestUserSettingsPreferences:
     """Test suite for UserSettings preferences field."""
 
-    def test_preferences_accepts_dict(
-        self, sample_user_settings_data: Dict[str, Any]
-    ) -> None:
+    def test_preferences_accepts_dict(self, sample_user_settings_data: Dict[str, Any]) -> None:
         """Test preferences accepts dictionary."""
         settings = UserSettings(**sample_user_settings_data)
 
@@ -234,9 +230,7 @@ class TestUserSettingsPreferences:
 class TestUserSettingsSerialization:
     """Test suite for UserSettings serialization."""
 
-    def test_user_settings_to_dict(
-        self, sample_user_settings_data: Dict[str, Any]
-    ) -> None:
+    def test_user_settings_to_dict(self, sample_user_settings_data: Dict[str, Any]) -> None:
         """Test UserSettings.model_dump() produces correct dict."""
         settings = UserSettings(**sample_user_settings_data)
         data = settings.model_dump()
@@ -247,9 +241,7 @@ class TestUserSettingsSerialization:
         assert data["resume_path"] == sample_user_settings_data["resume_path"]
         assert data["preferences"] == sample_user_settings_data["preferences"]
 
-    def test_user_settings_to_json(
-        self, sample_user_settings_data: Dict[str, Any]
-    ) -> None:
+    def test_user_settings_to_json(self, sample_user_settings_data: Dict[str, Any]) -> None:
         """Test UserSettings.model_dump_json() produces valid JSON."""
         settings = UserSettings(**sample_user_settings_data)
         json_str = settings.model_dump_json()
@@ -258,18 +250,14 @@ class TestUserSettingsSerialization:
         assert parsed["user_name"] == sample_user_settings_data["user_name"]
         assert parsed["preferences"] == sample_user_settings_data["preferences"]
 
-    def test_user_settings_from_dict(
-        self, sample_user_settings_data: Dict[str, Any]
-    ) -> None:
+    def test_user_settings_from_dict(self, sample_user_settings_data: Dict[str, Any]) -> None:
         """Test creating UserSettings from dictionary."""
         settings = UserSettings.model_validate(sample_user_settings_data)
 
         assert settings.user_name == sample_user_settings_data["user_name"]
         assert settings.user_email == sample_user_settings_data["user_email"]
 
-    def test_user_settings_round_trip(
-        self, sample_user_settings_data: Dict[str, Any]
-    ) -> None:
+    def test_user_settings_round_trip(self, sample_user_settings_data: Dict[str, Any]) -> None:
         """Test serialization/deserialization round trip."""
         original = UserSettings(**sample_user_settings_data)
         json_str = original.model_dump_json()
