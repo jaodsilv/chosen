@@ -6,12 +6,21 @@ This module contains models for conversation analysis:
     - ActionItems: Pending actions for candidate and recruiter
     - ContextAnalysis: Complete analysis of conversation context
     - JobFitScore: Scoring of job fit with breakdowns
+
+Design Note - Immutable Value Objects:
+    SentimentTrend, ConversationStage, and SkillGap are implemented as frozen
+    (immutable) value objects. Once created, they represent a snapshot that
+    should not be modified. This provides:
+    - Runtime enforcement of immutability
+    - Hashability for use in sets and dictionary keys
+    - Clear semantic intent about object lifecycle
+    - Type safety when passing these objects between components
 """
 
 from datetime import datetime
 from typing import Dict, List, Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # Type aliases for sentiment values
 SentimentValue = Literal["positive", "neutral", "negative"]
@@ -23,27 +32,37 @@ GapSeverity = Literal["low", "medium", "high"]
 class SentimentTrend(BaseModel):
     """Tracks sentiment changes throughout a conversation.
 
+    This is an immutable value object representing a sentiment snapshot.
+    Once created, it cannot be modified - use a new instance for updates.
+
     Attributes:
         initial: The sentiment at the start of the conversation.
         current: The current sentiment state.
         direction: Whether sentiment is improving, stable, or declining.
-        indicators: List of specific indicators that inform the analysis.
+        indicators: Tuple of specific indicators that inform the analysis.
     """
+
+    model_config = ConfigDict(frozen=True)
 
     initial: SentimentValue
     current: SentimentValue
     direction: SentimentDirection
-    indicators: List[str]
+    indicators: tuple[str, ...]
 
 
 class ConversationStage(BaseModel):
     """Tracks the current stage of a conversation.
+
+    This is an immutable value object representing a stage snapshot.
+    Once created, it cannot be modified - use a new instance for updates.
 
     Attributes:
         current: The current conversation stage (e.g., initial_outreach).
         progression_quality: Assessment of how well the conversation
             is progressing.
     """
+
+    model_config = ConfigDict(frozen=True)
 
     current: str
     progression_quality: ProgressionQuality
@@ -86,11 +105,16 @@ class ContextAnalysis(BaseModel):
 class SkillGap(BaseModel):
     """Represents a gap between candidate skills and job requirements.
 
+    This is an immutable value object representing a skill gap assessment.
+    Once created, it cannot be modified - use a new instance for updates.
+
     Attributes:
         skill: The skill that is lacking or needs improvement.
         severity: How critical the gap is (low, medium, high).
         mitigation: Optional suggestion for addressing the gap.
     """
+
+    model_config = ConfigDict(frozen=True)
 
     skill: str
     severity: GapSeverity
