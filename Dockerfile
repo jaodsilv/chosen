@@ -1,4 +1,4 @@
-# AI Message Writer Assistant v2 - Backend Dockerfile
+# CHOSEN v2 - Backend Dockerfile
 FROM python:3.11-slim
 
 # Set working directory

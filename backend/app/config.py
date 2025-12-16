@@ -17,7 +17,8 @@ class Settings(BaseSettings):
     )
 
     # Application
-    app_name: str = "ai-message-writer-assistant"
+    # Lowercase per Python package naming conventions; uppercase "CHOSEN" used for branding
+    app_name: str = "chosen"
     app_version: str = "2.0.0"
     env: str = "development"
 

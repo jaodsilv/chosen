@@ -1,4 +1,4 @@
-"""Response metrics model for the AI Message Writer Assistant.
+"""Response metrics model for CHOSEN.
 
 This module contains the ResponseMetrics model for tracking
 response time and message count metrics.

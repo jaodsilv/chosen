@@ -1,3 +1,3 @@
-"""AI Message Writer Assistant - Backend Application."""
+"""CHOSEN - Backend Application."""
 
 __version__ = "2.0.0"

@@ -1,4 +1,4 @@
-"""User settings model for the AI Message Writer Assistant.
+"""User settings model for CHOSEN.
 
 This module contains the UserSettings model for storing user
 preferences and configuration.

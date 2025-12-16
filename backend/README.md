@@ -1,6 +1,6 @@
-# AI Message Writer Assistant v2 - Backend
+# CHOSEN v2 - Backend
 
-Python FastAPI backend for the AI Message Writer Assistant.
+Python FastAPI backend for CHOSEN - Candidate's Helper for Optimized Seeker-Employer Networking.
 
 ## Quick Start
 

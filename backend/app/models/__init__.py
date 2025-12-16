@@ -1,6 +1,6 @@
 """Models - Pydantic data models for domain objects.
 
-This package exports all domain models used in the AI Message Writer Assistant.
+This package exports all domain models used in CHOSEN.
 """
 
 from app.models.analysis import (

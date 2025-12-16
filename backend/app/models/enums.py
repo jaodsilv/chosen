@@ -1,4 +1,4 @@
-"""Enum definitions for the AI Message Writer Assistant.
+"""Enum definitions for CHOSEN.
 
 This module contains all enumeration types used across the application:
     - Platform: Communication platforms (linkedin, email, phone, in_person)

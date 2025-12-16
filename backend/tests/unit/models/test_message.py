@@ -35,9 +35,7 @@ class TestMessageCreation:
         assert message.body == sample_message_data["body"]
         assert message.attachments == sample_message_data["attachments"]
 
-    def test_message_with_required_fields_only(
-        self, sample_message_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_message_with_required_fields_only(self, sample_message_minimal_data: Dict[str, Any]) -> None:
         """Test creating Message with only required fields."""
         message = Message(**sample_message_minimal_data)
 
@@ -51,21 +49,15 @@ class TestMessageCreation:
     def test_message_missing_timestamp_raises_error(self) -> None:
         """Test that missing timestamp raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            Message(  # type: ignore[call-arg]
-                from_name="Recruiter", body="Message body"
-            )
+            Message(from_name="Recruiter", body="Message body")  # type: ignore[call-arg]
 
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("timestamp",) for e in errors)
 
-    def test_message_missing_from_name_raises_error(
-        self, fixed_datetime: datetime
-    ) -> None:
+    def test_message_missing_from_name_raises_error(self, fixed_datetime: datetime) -> None:
         """Test that missing from_name raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            Message(  # type: ignore[call-arg]
-                timestamp=fixed_datetime, body="Message body"
-            )
+            Message(timestamp=fixed_datetime, body="Message body")  # type: ignore[call-arg]
 
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("from_name",) for e in errors)
@@ -73,9 +65,7 @@ class TestMessageCreation:
     def test_message_missing_body_raises_error(self, fixed_datetime: datetime) -> None:
         """Test that missing body raises ValidationError."""
         with pytest.raises(ValidationError) as exc_info:
-            Message(  # type: ignore[call-arg]
-                timestamp=fixed_datetime, from_name="Recruiter"
-            )
+            Message(timestamp=fixed_datetime, from_name="Recruiter")  # type: ignore[call-arg]
 
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("body",) for e in errors)
@@ -85,38 +75,26 @@ class TestMessageCreation:
 class TestMessageDefaults:
     """Test suite for Message model default values."""
 
-    def test_to_name_defaults_to_none(
-        self, sample_message_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_to_name_defaults_to_none(self, sample_message_minimal_data: Dict[str, Any]) -> None:
         """Test that to_name defaults to None when not provided."""
         message = Message(**sample_message_minimal_data)
         assert message.to_name is None
 
-    def test_subject_defaults_to_none(
-        self, sample_message_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_subject_defaults_to_none(self, sample_message_minimal_data: Dict[str, Any]) -> None:
         """Test that subject defaults to None when not provided."""
         message = Message(**sample_message_minimal_data)
         assert message.subject is None
 
-    def test_attachments_defaults_to_empty_list(
-        self, sample_message_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_attachments_defaults_to_empty_list(self, sample_message_minimal_data: Dict[str, Any]) -> None:
         """Test that attachments defaults to empty list when not provided."""
         message = Message(**sample_message_minimal_data)
         assert message.attachments == []
         assert isinstance(message.attachments, list)
 
-    def test_attachments_default_is_new_list_per_instance(
-        self, fixed_datetime: datetime
-    ) -> None:
+    def test_attachments_default_is_new_list_per_instance(self, fixed_datetime: datetime) -> None:
         """Test that attachments default creates new list per instance."""
-        message1 = Message(
-            timestamp=fixed_datetime, from_name="Recruiter", body="Body 1"
-        )
-        message2 = Message(
-            timestamp=fixed_datetime, from_name="Recruiter", body="Body 2"
-        )
+        message1 = Message(timestamp=fixed_datetime, from_name="Recruiter", body="Body 1")
+        message2 = Message(timestamp=fixed_datetime, from_name="Recruiter", body="Body 2")
 
         # Modify one instance's attachments
         message1.attachments.append("file.pdf")
@@ -130,9 +108,7 @@ class TestMessageDefaults:
 class TestMessageValidation:
     """Test suite for Message field validation."""
 
-    def test_timestamp_accepts_datetime(
-        self, sample_message_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_timestamp_accepts_datetime(self, sample_message_minimal_data: Dict[str, Any]) -> None:
         """Test timestamp accepts datetime object."""
         message = Message(**sample_message_minimal_data)
         assert isinstance(message.timestamp, datetime)
@@ -158,9 +134,7 @@ class TestMessageValidation:
                 body="Message body",
             )
 
-    def test_from_name_accepts_string(
-        self, sample_message_minimal_data: Dict[str, Any]
-    ) -> None:
+    def test_from_name_accepts_string(self, sample_message_minimal_data: Dict[str, Any]) -> None:
         """Test from_name accepts string value."""
         message = Message(**sample_message_minimal_data)
         assert isinstance(message.from_name, str)
@@ -182,16 +156,12 @@ class TestMessageValidation:
         assert "\n" in message.body
         assert "Best regards" in message.body
 
-    def test_attachments_accepts_list_of_strings(
-        self, sample_message_data: Dict[str, Any]
-    ) -> None:
+    def test_attachments_accepts_list_of_strings(self, sample_message_data: Dict[str, Any]) -> None:
         """Test attachments accepts list of string paths."""
         message = Message(**sample_message_data)
         assert all(isinstance(a, str) for a in message.attachments)
 
-    def test_attachments_rejects_non_string_items(
-        self, fixed_datetime: datetime
-    ) -> None:
+    def test_attachments_rejects_non_string_items(self, fixed_datetime: datetime) -> None:
         """Test attachments rejects list with non-string items."""
         with pytest.raises(ValidationError):
             Message(
@@ -245,9 +215,7 @@ class TestMessageSerialization:
         assert restored.from_name == message.from_name
         assert restored.body == message.body
 
-    def test_message_timestamp_serializes_to_iso_format(
-        self, sample_message_data: Dict[str, Any]
-    ) -> None:
+    def test_message_timestamp_serializes_to_iso_format(self, sample_message_data: Dict[str, Any]) -> None:
         """Test timestamp serializes to ISO format string in JSON."""
         message = Message(**sample_message_data)
         json_str = message.model_dump_json()
@@ -275,9 +243,7 @@ class TestMessageSerialization:
 class TestMessageEdgeCases:
     """Test suite for Message edge cases."""
 
-    def test_message_with_empty_attachments_list(
-        self, fixed_datetime: datetime
-    ) -> None:
+    def test_message_with_empty_attachments_list(self, fixed_datetime: datetime) -> None:
         """Test explicitly passing empty attachments list."""
         message = Message(
             timestamp=fixed_datetime,
@@ -307,9 +273,7 @@ class TestMessageEdgeCases:
         assert message.from_name == "田中太郎"
         assert "🎉" in message.body
 
-    def test_message_with_special_characters_in_subject(
-        self, fixed_datetime: datetime
-    ) -> None:
+    def test_message_with_special_characters_in_subject(self, fixed_datetime: datetime) -> None:
         """Test subject with special characters."""
         message = Message(
             timestamp=fixed_datetime,
