@@ -42,7 +42,7 @@ class TestSentimentTrendCreation:
             SentimentTrend(  # type: ignore[call-arg]
                 current="positive",
                 direction="stable",
-                indicators=["Test"],
+                indicators=("Test",),
             )
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("initial",) for e in errors)
@@ -53,7 +53,7 @@ class TestSentimentTrendCreation:
             SentimentTrend(  # type: ignore[call-arg]
                 initial="positive",
                 direction="stable",
-                indicators=["Test"],
+                indicators=("Test",),
             )
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("current",) for e in errors)
@@ -64,7 +64,7 @@ class TestSentimentTrendCreation:
             SentimentTrend(  # type: ignore[call-arg]
                 initial="positive",
                 current="positive",
-                indicators=["Test"],
+                indicators=("Test",),
             )
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("direction",) for e in errors)
@@ -105,7 +105,7 @@ class TestSentimentTrendCreation:
             initial=initial,  # type: ignore[arg-type]
             current=current,  # type: ignore[arg-type]
             direction=direction,  # type: ignore[arg-type]
-            indicators=["Test indicator"],
+            indicators=("Test indicator",),
         )
         assert trend.initial == initial
         assert trend.current == current
@@ -608,7 +608,7 @@ class TestFrozenValueObjects:
         trend = SentimentTrend(**sample_sentiment_trend_data)
 
         with pytest.raises(ValidationError) as exc_info:
-            trend.current = "negative"  # type: ignore[misc]
+            trend.current = "negative"
 
         assert "frozen" in str(exc_info.value).lower()
 
@@ -619,7 +619,7 @@ class TestFrozenValueObjects:
         stage = ConversationStage(**sample_conversation_stage_data)
 
         with pytest.raises(ValidationError) as exc_info:
-            stage.current = "screening"  # type: ignore[misc]
+            stage.current = "screening"
 
         assert "frozen" in str(exc_info.value).lower()
 
@@ -628,7 +628,7 @@ class TestFrozenValueObjects:
         gap = SkillGap(skill="Python", severity="low")
 
         with pytest.raises(ValidationError) as exc_info:
-            gap.severity = "high"  # type: ignore[misc]
+            gap.severity = "high"
 
         assert "frozen" in str(exc_info.value).lower()
 

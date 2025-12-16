@@ -251,7 +251,7 @@ class TestParticipantFrozen:
         participant = Participant(**sample_participant_data)
 
         with pytest.raises(ValidationError) as exc_info:
-            participant.name = "New Name"  # type: ignore[misc]
+            participant.name = "New Name"
 
         assert "frozen" in str(exc_info.value).lower()
 
@@ -262,7 +262,7 @@ class TestParticipantFrozen:
         participant = Participant(**sample_participant_data)
 
         with pytest.raises(ValidationError) as exc_info:
-            participant.role = ParticipantRole.CANDIDATE  # type: ignore[misc]
+            participant.role = ParticipantRole.CANDIDATE
 
         assert "frozen" in str(exc_info.value).lower()
 
