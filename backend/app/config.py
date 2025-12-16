@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     )
 
     # Application
+    # Lowercase per Python package naming conventions; uppercase "CHOSEN" used for branding
     app_name: str = "chosen"
     app_version: str = "2.0.0"
     env: str = "development"
