@@ -1,4 +1,4 @@
-"""Message model for the AI Message Writer Assistant.
+"""Message model for CHOSEN.
 
 This module contains the Message model representing individual messages
 in a conversation thread.

@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Setup script for AI Message Writer Assistant v2
+# Setup script for CHOSEN v2
 # This script sets up the development environment on Unix-like systems
 
 set -e
 
 echo "=============================================="
-echo "AI Message Writer Assistant v2 - Setup Script"
+echo "CHOSEN v2 - Setup Script"
 echo "=============================================="
 echo ""
 

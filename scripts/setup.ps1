@@ -1,10 +1,10 @@
-# Setup script for AI Message Writer Assistant v2
+# Setup script for CHOSEN v2
 # This script sets up the development environment on Windows
 
 $ErrorActionPreference = "Stop"
 
 Write-Host "==============================================" -ForegroundColor Cyan
-Write-Host "AI Message Writer Assistant v2 - Setup Script" -ForegroundColor Cyan
+Write-Host "CHOSEN v2 - Setup Script" -ForegroundColor Cyan
 Write-Host "==============================================" -ForegroundColor Cyan
 Write-Host ""
 

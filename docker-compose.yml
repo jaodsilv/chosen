@@ -1,4 +1,4 @@
-# AI Message Writer Assistant v2 - Docker Compose Configuration
+# CHOSEN v2 - Docker Compose Configuration
 version: '3.8'
 
 services:
@@ -6,11 +6,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ai-message-writer-backend
+    container_name: chosen-backend
     ports:
       - "${API_PORT:-8000}:8000"
     environment:
-      - APP_NAME=${APP_NAME:-ai-message-writer-assistant}
+      - APP_NAME=${APP_NAME:-chosen}
       - APP_VERSION=${APP_VERSION:-2.0.0}
       - ENV=${ENV:-development}
       - API_HOST=0.0.0.0
@@ -38,7 +38,7 @@ services:
   #   build:
   #     context: ./frontend
   #     dockerfile: Dockerfile
-  #   container_name: ai-message-writer-frontend
+  #   container_name: chosen-frontend
   #   ports:
   #     - "3000:3000"
   #   depends_on:
@@ -48,7 +48,7 @@ services:
 
 networks:
   default:
-    name: ai-message-writer-network
+    name: chosen-network
 
 volumes:
   data:

@@ -1,12 +1,12 @@
 [project]
-name = "ai-message-writer-assistant"
+name = "chosen"
 version = "2.0.0"
-description = "Multi-agent AI assistant for recruitment communication"
+description = "CHOSEN - Candidate's Helper for Optimized Seeker-Employer Networking"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
-    {name = "AI Message Writer Team"}
+    {name = "CHOSEN Team"}
 ]
 dependencies = [
     "fastapi>=0.109.0",

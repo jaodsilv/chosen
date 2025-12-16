@@ -1,4 +1,4 @@
-"""Analysis models for the AI Message Writer Assistant.
+"""Analysis models for CHOSEN.
 
 This module contains models for conversation analysis:
     - SentimentTrend: Tracks sentiment changes over conversation

@@ -48,7 +48,7 @@ class TestGetSettings:
     def test_get_settings_has_default_values(self) -> None:
         """Test that Settings has expected default values."""
         settings = get_settings()
-        assert settings.app_name == "ai-message-writer-assistant"
+        assert settings.app_name == "chosen"
         assert settings.app_version == "2.0.0"
         assert settings.env == "development"
         assert settings.api_host == "0.0.0.0"
@@ -192,7 +192,7 @@ class TestRootEndpoint:
         response = client.get("/")
         data = response.json()
 
-        assert data["name"] == "ai-message-writer-assistant"
+        assert data["name"] == "chosen"
         assert data["version"] == "2.0.0"
         assert data["docs"] == "/api/docs"
 

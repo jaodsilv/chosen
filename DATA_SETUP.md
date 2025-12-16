@@ -1,6 +1,6 @@
 # Data Repository Setup Guide
 
-This guide explains how to set up and manage the private data repository for AI Message Writer Assistant.
+This guide explains how to set up and manage the private data repository for CHOSEN.
 
 ## Overview
 
@@ -8,12 +8,12 @@ The application's private data (signatures, messages, threads, settings) is stor
 
 ## Architecture
 
-1. **Main Repository**: `ai-message-writer-assistant` (this repository)
+1. **Main Repository**: `chosen` (this repository)
    - Contains application code
    - Has `data/` in `.gitignore` (never commits private data)
    - Has a directory junction at `data/` pointing to the separate data repository
 
-2. **Data Repository**: `ai-message-writer-data` (private repository)
+2. **Data Repository**: `chosen-data` (private repository)
    - Contains all private data
    - Uses **git-crypt** for encryption
    - All JSON files are automatically encrypted
@@ -23,9 +23,9 @@ The application's private data (signatures, messages, threads, settings) is stor
 
 The data repository has already been set up on this machine:
 
-1. ✅ Private GitHub repository created: https://github.com/jaodsilv/ai-message-writer-data
+1. ✅ Private GitHub repository created: https://github.com/jaodsilv/chosen-data  <!-- TODO: Update URL when repository is renamed -->
 2. ✅ git-crypt initialized and configured
-3. ✅ Encryption key exported to: `D:\src\ai-message-writer-assistant\git-crypt-key.key`
+3. ✅ Encryption key exported to: `D:\src\chosen\git-crypt-key.key`  <!-- TODO: Update path when directory is renamed -->
 4. ✅ Directory structure created (exports, messages, threads, settings)
 5. ✅ Existing signature files migrated and encrypted
 6. ✅ Directory junction created: `main/data/` → `../data/`
@@ -65,16 +65,16 @@ sudo dnf install git-crypt
 
 ```bash
 cd D:\src  # Or your preferred location
-git clone https://github.com/jaodsilv/ai-message-writer-assistant.git
-cd ai-message-writer-assistant
+git clone https://github.com/jaodsilv/chosen.git  # TODO: Update URL when repository is renamed
+cd chosen
 npm install
 ```
 
 ### Step 3: Clone the Data Repository
 
 ```bash
-cd D:\src\ai-message-writer-assistant
-git clone git@github.com:jaodsilv/ai-message-writer-data.git data
+cd D:\src\chosen  # TODO: Update path when directory is renamed
+git clone git@github.com:jaodsilv/chosen-data.git data  # TODO: Update URL when repository is renamed
 ```
 
 **Note**: This clones into `data/` subdirectory of the parent folder.
@@ -82,7 +82,7 @@ git clone git@github.com:jaodsilv/ai-message-writer-data.git data
 ### Step 4: Unlock the Repository
 
 1. **Transfer the encryption key securely** to the new machine:
-   - Original location: `D:\src\ai-message-writer-assistant\git-crypt-key.key`
+   - Original location: `D:\src\chosen\git-crypt-key.key`  <!-- TODO: Update path when directory is renamed -->
    - Methods: Password manager, encrypted USB drive, secure file transfer
 
 2. **Unlock the repository**:
@@ -104,27 +104,27 @@ git clone git@github.com:jaodsilv/ai-message-writer-data.git data
 
 **On Windows:**
 ```cmd
-cd D:\src\ai-message-writer-assistant\main
+cd D:\src\chosen\main  # TODO: Update path when directory is renamed
 mklink /J data ..\data
 ```
 
 **On macOS/Linux (symlink):**
 ```bash
-cd /path/to/ai-message-writer-assistant/main
+cd /path/to/chosen/main  # TODO: Update path when directory is renamed
 ln -s ../data data
 ```
 
 ### Step 6: Verify Setup
 
 ```bash
-cd D:\src\ai-message-writer-assistant\main
+cd D:\src\chosen\main  # TODO: Update path when directory is renamed
 ls -la data/exports/  # Should show your encrypted files
 ```
 
 ## Directory Structure
 
 ```
-D:\src\ai-message-writer-assistant\
+D:\src\chosen\                          # TODO: Update path when directory is renamed
 ├── main/                              # Main application repository
 │   ├── app/                           # Application code
 │   ├── data/ → ../data                # Junction/symlink to data repo
@@ -149,7 +149,7 @@ D:\src\ai-message-writer-assistant\
 The application automatically saves data to the appropriate directories. To version control changes:
 
 ```bash
-cd D:\src\ai-message-writer-assistant\data
+cd D:\src\chosen\data  # TODO: Update path when directory is renamed
 
 # Check what changed
 git status
@@ -167,13 +167,13 @@ git push
 
 **Before starting work:**
 ```bash
-cd D:\src\ai-message-writer-assistant\data
+cd D:\src\chosen\data  # TODO: Update path when directory is renamed
 git pull
 ```
 
 **After making changes:**
 ```bash
-cd D:\src\ai-message-writer-assistant\data
+cd D:\src\chosen\data  # TODO: Update path when directory is renamed
 git add -A
 git commit -m "Update message templates"
 git push
@@ -199,7 +199,7 @@ git push
 To verify files are encrypted in the repository:
 
 ```bash
-cd D:\src\ai-message-writer-assistant\data
+cd D:\src\chosen\data  # TODO: Update path when directory is renamed
 
 # Check encryption status
 git-crypt status
@@ -280,7 +280,7 @@ DATA_DIR=/custom/path/to/data
 1. **Export the encryption key** to multiple secure locations
 2. **Clone the data repository** to an external drive:
    ```bash
-   git clone https://github.com/jaodsilv/ai-message-writer-data.git /path/to/backup
+   git clone https://github.com/jaodsilv/chosen-data.git /path/to/backup  # TODO: Update URL when repository is renamed
    cd /path/to/backup
    git-crypt unlock /path/to/key
    ```
@@ -313,8 +313,8 @@ DATA_DIR=/custom/path/to/data
 
 ## Support
 
-1. **Main Repository**: https://github.com/jaodsilv/ai-message-writer-assistant
-2. **Data Repository**: https://github.com/jaodsilv/ai-message-writer-data (private)
+1. **Main Repository**: https://github.com/jaodsilv/chosen  <!-- TODO: Update URL when repository is renamed -->
+2. **Data Repository**: https://github.com/jaodsilv/chosen-data (private)  <!-- TODO: Update URL when repository is renamed -->
 3. **git-crypt Documentation**: https://github.com/AGWA/git-crypt
 4. **Issues**: Create an issue in the main repository (never mention private data!)
 

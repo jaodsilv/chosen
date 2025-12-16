@@ -1,4 +1,4 @@
-"""Conversation model for the AI Message Writer Assistant.
+"""Conversation model for CHOSEN.
 
 This module contains the Conversation model representing a full
 conversation thread with a recruiter.

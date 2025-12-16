@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Multi-agent AI message writer assistant for recruitment communication. Python/FastAPI backend with React frontend (planned). Uses file-based YAML storage with git-crypt encryption for sensitive data.
+CHOSEN - Candidate's Helper for Optimized Seeker-Employer Networking. Multi-agent AI assistant for recruitment communication. Python/FastAPI backend with React frontend (planned). Uses file-based YAML storage with git-crypt encryption for sensitive data.
 
 ## Development Commands
 

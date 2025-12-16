@@ -24,7 +24,7 @@ Create a Personal Access Token (PAT) with the following permissions:
 
 1. Go to GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens
 2. Click "Generate new token"
-3. Select the repository: `jaodsilv/ai-message-writer-assistant`
+3. Select the repository: `jaodsilv/ai-message-writer-assistant`  <!-- TODO: Update when repository is renamed to 'chosen' -->
 4. Set expiration as needed
 5. Grant the following permissions:
    - **Issues**: Read and write

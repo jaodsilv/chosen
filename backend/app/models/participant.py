@@ -1,4 +1,4 @@
-"""Participant model for the AI Message Writer Assistant.
+"""Participant model for CHOSEN.
 
 This module contains the Participant model representing a person
 involved in a conversation.

@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     )
 
     # Application
-    app_name: str = "ai-message-writer-assistant"
+    app_name: str = "chosen"
     app_version: str = "2.0.0"
     env: str = "development"
 
