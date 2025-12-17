@@ -238,3 +238,67 @@ class TestParticipantEmailValidation:
             email=None,
         )
         assert participant.email is None
+
+
+@pytest.mark.unit
+class TestParticipantFrozen:
+    """Test suite for Participant frozen (immutable) behavior."""
+
+    def test_participant_is_immutable(self, sample_participant_data: Dict[str, Any]) -> None:
+        """Test Participant cannot be modified after creation."""
+        participant = Participant(**sample_participant_data)
+
+        with pytest.raises(ValidationError) as exc_info:
+            participant.name = "New Name"
+
+        assert "frozen" in str(exc_info.value).lower()
+
+    def test_participant_role_is_immutable(self, sample_participant_data: Dict[str, Any]) -> None:
+        """Test Participant role cannot be modified after creation."""
+        participant = Participant(**sample_participant_data)
+
+        with pytest.raises(ValidationError) as exc_info:
+            participant.role = ParticipantRole.CANDIDATE
+
+        assert "frozen" in str(exc_info.value).lower()
+
+    def test_participant_is_hashable(self, sample_participant_data: Dict[str, Any]) -> None:
+        """Test Participant is hashable and can be used in sets/dicts."""
+        participant1 = Participant(**sample_participant_data)
+        participant2 = Participant(**sample_participant_data)
+
+        # Should be hashable
+        assert hash(participant1) is not None
+        assert hash(participant2) is not None
+
+        # Can be used in sets
+        participants_set = {participant1, participant2}
+        assert len(participants_set) == 1  # Same values hash to same value
+
+        # Can be used as dict keys
+        participants_dict = {participant1: "first", participant2: "second"}
+        assert participants_dict[participant1] == "second"
+
+    def test_participant_different_values_hash_differently(self) -> None:
+        """Test different Participant instances have different hashes."""
+        participant1 = Participant(name="John", role=ParticipantRole.RECRUITER)
+        participant2 = Participant(name="Jane", role=ParticipantRole.CANDIDATE)
+
+        # Different values should have different hashes (usually)
+        participants_set = {participant1, participant2}
+        assert len(participants_set) == 2
+
+    def test_participant_supports_copy_with_modifications(self, sample_participant_data: Dict[str, Any]) -> None:
+        """Test Participant can create modified copies using model_copy."""
+        original = Participant(**sample_participant_data)
+
+        # Create a modified copy
+        modified = original.model_copy(update={"name": "New Name"})
+
+        # Original should be unchanged
+        assert original.name == sample_participant_data["name"]
+        # Modified should have new value
+        assert modified.name == "New Name"
+        # Other fields should be the same
+        assert modified.role == original.role
+        assert modified.email == original.email

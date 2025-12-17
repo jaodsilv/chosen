@@ -178,10 +178,10 @@ def sample_sentiment_trend_data() -> Dict[str, Any]:
         "initial": "positive",
         "current": "positive",
         "direction": "stable",
-        "indicators": [
+        "indicators": (
             "Enthusiastic initial message",
             "Personalized outreach",
-        ],
+        ),
     }
 
 

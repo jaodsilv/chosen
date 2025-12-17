@@ -23,9 +23,9 @@ The application's private data (signatures, messages, threads, settings) is stor
 
 The data repository has already been set up on this machine:
 
-1. ✅ Private GitHub repository created: https://github.com/jaodsilv/chosen-data  <!-- TODO: Update URL when repository is renamed -->
+1. ✅ Private GitHub repository created: <https://github.com/jaodsilv/chosen-data>
 2. ✅ git-crypt initialized and configured
-3. ✅ Encryption key exported to: `D:\src\chosen\git-crypt-key.key`  <!-- TODO: Update path when directory is renamed -->
+3. ✅ Encryption key exported to: `D:\src\chosen\git-crypt-key.key`
 4. ✅ Directory structure created (exports, messages, threads, settings)
 5. ✅ Existing signature files migrated and encrypted
 6. ✅ Directory junction created: `main/data/` → `../data/`
@@ -37,6 +37,7 @@ Follow these steps to set up the data repository on another computer:
 ### Step 1: Install git-crypt
 
 **Windows (using Scoop):**
+
 ```bash
 # Install Scoop (if not already installed)
 # Open PowerShell as Administrator
@@ -48,11 +49,13 @@ scoop install git-crypt
 ```
 
 **macOS (using Homebrew):**
+
 ```bash
 brew install git-crypt
 ```
 
 **Linux:**
+
 ```bash
 # Debian/Ubuntu
 sudo apt install git-crypt
@@ -65,7 +68,7 @@ sudo dnf install git-crypt
 
 ```bash
 cd D:\src  # Or your preferred location
-git clone https://github.com/jaodsilv/chosen.git  # TODO: Update URL when repository is renamed
+git clone https://github.com/jaodsilv/chosen.git
 cd chosen
 npm install
 ```
@@ -73,8 +76,8 @@ npm install
 ### Step 3: Clone the Data Repository
 
 ```bash
-cd D:\src\chosen  # TODO: Update path when directory is renamed
-git clone git@github.com:jaodsilv/chosen-data.git data  # TODO: Update URL when repository is renamed
+cd D:\src\chosen
+git clone git@github.com:jaodsilv/chosen-data.git data
 ```
 
 **Note**: This clones into `data/` subdirectory of the parent folder.
@@ -82,16 +85,18 @@ git clone git@github.com:jaodsilv/chosen-data.git data  # TODO: Update URL when 
 ### Step 4: Unlock the Repository
 
 1. **Transfer the encryption key securely** to the new machine:
-   - Original location: `D:\src\chosen\git-crypt-key.key`  <!-- TODO: Update path when directory is renamed -->
+   - Original location: `D:\src\chosen\git-crypt-key.key`
    - Methods: Password manager, encrypted USB drive, secure file transfer
 
 2. **Unlock the repository**:
+
    ```bash
    cd data
    git-crypt unlock /path/to/git-crypt-key.key
    ```
 
 3. **Verify unlocking worked**:
+
    ```bash
    git-crypt status
    # Should show "encrypted: exports/*.json" etc.
@@ -103,28 +108,30 @@ git clone git@github.com:jaodsilv/chosen-data.git data  # TODO: Update URL when 
 ### Step 5: Create Directory Junction (Windows)
 
 **On Windows:**
+
 ```cmd
-cd D:\src\chosen\main  # TODO: Update path when directory is renamed
+cd D:\src\chosen\main
 mklink /J data ..\data
 ```
 
 **On macOS/Linux (symlink):**
+
 ```bash
-cd /path/to/chosen/main  # TODO: Update path when directory is renamed
+cd /path/to/chosen/main
 ln -s ../data data
 ```
 
 ### Step 6: Verify Setup
 
 ```bash
-cd D:\src\chosen\main  # TODO: Update path when directory is renamed
+cd D:\src\chosen\main
 ls -la data/exports/  # Should show your encrypted files
 ```
 
 ## Directory Structure
 
 ```
-D:\src\chosen\                          # TODO: Update path when directory is renamed
+D:\src\chosen\
 ├── main/                              # Main application repository
 │   ├── app/                           # Application code
 │   ├── data/ → ../data                # Junction/symlink to data repo
@@ -149,7 +156,7 @@ D:\src\chosen\                          # TODO: Update path when directory is re
 The application automatically saves data to the appropriate directories. To version control changes:
 
 ```bash
-cd D:\src\chosen\data  # TODO: Update path when directory is renamed
+cd D:\src\chosen\data
 
 # Check what changed
 git status
@@ -166,14 +173,16 @@ git push
 ### Syncing Across Machines
 
 **Before starting work:**
+
 ```bash
-cd D:\src\chosen\data  # TODO: Update path when directory is renamed
+cd D:\src\chosen\data
 git pull
 ```
 
 **After making changes:**
+
 ```bash
-cd D:\src\chosen\data  # TODO: Update path when directory is renamed
+cd D:\src\chosen\data
 git add -A
 git commit -m "Update message templates"
 git push
@@ -186,9 +195,11 @@ git push
 1. **NEVER commit the encryption key** to any repository
 2. **NEVER make the data repository public**
 3. **ALWAYS verify files are encrypted** before pushing:
+
    ```bash
    git-crypt status
    ```
+
 4. **Store the encryption key securely**:
    - Use a password manager (1Password, Bitwarden, etc.)
    - Encrypted cloud storage (not Dropbox/Google Drive plaintext!)
@@ -199,7 +210,7 @@ git push
 To verify files are encrypted in the repository:
 
 ```bash
-cd D:\src\chosen\data  # TODO: Update path when directory is renamed
+cd D:\src\chosen\data
 
 # Check encryption status
 git-crypt status
@@ -232,6 +243,7 @@ If you need to rotate the encryption key:
 ### Error: "git-crypt unlock failed"
 
 **Possible causes**:
+
 1. Wrong key file - ensure you're using the correct `git-crypt-key.key`
 2. Corrupted key - verify file size is 148 bytes
 3. Repository not initialized with git-crypt
@@ -241,6 +253,7 @@ If you need to rotate the encryption key:
 **Cause**: Repository is locked (encrypted)
 
 **Solution**:
+
 ```bash
 cd data
 git-crypt unlock /path/to/git-crypt-key.key
@@ -252,6 +265,7 @@ git-crypt unlock /path/to/git-crypt-key.key
 **macOS/Linux**: Use `ln -s ../data data`
 
 **Verification**:
+
 ```bash
 ls -la main/data  # Should show junction/symlink indicator
 ```
@@ -279,11 +293,13 @@ DATA_DIR=/custom/path/to/data
 
 1. **Export the encryption key** to multiple secure locations
 2. **Clone the data repository** to an external drive:
+
    ```bash
-   git clone https://github.com/jaodsilv/chosen-data.git /path/to/backup  # TODO: Update URL when repository is renamed
+   git clone https://github.com/jaodsilv/chosen-data.git /path/to/backup
    cd /path/to/backup
    git-crypt unlock /path/to/key
    ```
+
 3. **Automated backups** with git push hooks (optional)
 
 ## FAQ
@@ -307,15 +323,16 @@ DATA_DIR=/custom/path/to/data
 ### Q: Can I share data with team members?
 
 **A**: Yes:
+
 1. Share the encryption key securely (encrypted email, password manager sharing)
 2. Grant them access to the private GitHub repository
 3. They follow the "Setting Up on Additional Machines" steps
 
 ## Support
 
-1. **Main Repository**: https://github.com/jaodsilv/chosen  <!-- TODO: Update URL when repository is renamed -->
-2. **Data Repository**: https://github.com/jaodsilv/chosen-data (private)  <!-- TODO: Update URL when repository is renamed -->
-3. **git-crypt Documentation**: https://github.com/AGWA/git-crypt
+1. **Main Repository**: <https://github.com/jaodsilv/chosen>
+2. **Data Repository**: <https://github.com/jaodsilv/chosen-data> (private)
+3. **git-crypt Documentation**: <https://github.com/AGWA/git-crypt>
 4. **Issues**: Create an issue in the main repository (never mention private data!)
 
 ## Related Files

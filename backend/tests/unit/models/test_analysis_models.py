@@ -42,7 +42,7 @@ class TestSentimentTrendCreation:
             SentimentTrend(  # type: ignore[call-arg]
                 current="positive",
                 direction="stable",
-                indicators=["Test"],
+                indicators=("Test",),
             )
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("initial",) for e in errors)
@@ -53,7 +53,7 @@ class TestSentimentTrendCreation:
             SentimentTrend(  # type: ignore[call-arg]
                 initial="positive",
                 direction="stable",
-                indicators=["Test"],
+                indicators=("Test",),
             )
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("current",) for e in errors)
@@ -64,7 +64,7 @@ class TestSentimentTrendCreation:
             SentimentTrend(  # type: ignore[call-arg]
                 initial="positive",
                 current="positive",
-                indicators=["Test"],
+                indicators=("Test",),
             )
         errors = exc_info.value.errors()
         assert any(e["loc"] == ("direction",) for e in errors)
@@ -81,14 +81,14 @@ class TestSentimentTrendCreation:
         assert any(e["loc"] == ("indicators",) for e in errors)
 
     def test_sentiment_trend_with_empty_indicators(self) -> None:
-        """Test SentimentTrend with empty indicators list."""
+        """Test SentimentTrend with empty indicators tuple."""
         trend = SentimentTrend(
             initial="positive",
             current="positive",
             direction="stable",
-            indicators=[],
+            indicators=(),
         )
-        assert trend.indicators == []
+        assert trend.indicators == ()
 
     @pytest.mark.parametrize(
         "initial,current,direction",
@@ -105,7 +105,7 @@ class TestSentimentTrendCreation:
             initial=initial,  # type: ignore[arg-type]
             current=current,  # type: ignore[arg-type]
             direction=direction,  # type: ignore[arg-type]
-            indicators=["Test indicator"],
+            indicators=("Test indicator",),
         )
         assert trend.initial == initial
         assert trend.current == current
@@ -595,3 +595,99 @@ class TestSkillGapSerialization:
         assert restored.skill == original.skill
         assert restored.severity == original.severity
         assert restored.mitigation == original.mitigation
+
+
+@pytest.mark.unit
+class TestFrozenValueObjects:
+    """Test suite for frozen (immutable) value objects."""
+
+    def test_sentiment_trend_is_immutable(self, sample_sentiment_trend_data: Dict[str, Any]) -> None:
+        """Test SentimentTrend cannot be modified after creation."""
+        trend = SentimentTrend(**sample_sentiment_trend_data)
+
+        with pytest.raises(ValidationError) as exc_info:
+            trend.current = "negative"
+
+        assert "frozen" in str(exc_info.value).lower()
+
+    def test_conversation_stage_is_immutable(self, sample_conversation_stage_data: Dict[str, Any]) -> None:
+        """Test ConversationStage cannot be modified after creation."""
+        stage = ConversationStage(**sample_conversation_stage_data)
+
+        with pytest.raises(ValidationError) as exc_info:
+            stage.current = "screening"
+
+        assert "frozen" in str(exc_info.value).lower()
+
+    def test_skill_gap_is_immutable(self) -> None:
+        """Test SkillGap cannot be modified after creation."""
+        gap = SkillGap(skill="Python", severity="low")
+
+        with pytest.raises(ValidationError) as exc_info:
+            gap.severity = "high"
+
+        assert "frozen" in str(exc_info.value).lower()
+
+    def test_sentiment_trend_is_hashable(self, sample_sentiment_trend_data: Dict[str, Any]) -> None:
+        """Test SentimentTrend is hashable and can be used in sets/dicts."""
+        trend1 = SentimentTrend(**sample_sentiment_trend_data)
+        trend2 = SentimentTrend(**sample_sentiment_trend_data)
+
+        # Should be hashable
+        assert hash(trend1) is not None
+        assert hash(trend2) is not None
+
+        # Can be used in sets
+        trends_set = {trend1, trend2}
+        assert len(trends_set) == 1  # Same values hash to same value
+
+        # Can be used as dict keys
+        trends_dict = {trend1: "first", trend2: "second"}
+        assert trends_dict[trend1] == "second"  # Second overwrites first
+
+    def test_conversation_stage_is_hashable(self, sample_conversation_stage_data: Dict[str, Any]) -> None:
+        """Test ConversationStage is hashable and can be used in sets/dicts."""
+        stage1 = ConversationStage(**sample_conversation_stage_data)
+        stage2 = ConversationStage(**sample_conversation_stage_data)
+
+        # Should be hashable
+        assert hash(stage1) is not None
+
+        # Can be used in sets
+        stages_set = {stage1, stage2}
+        assert len(stages_set) == 1
+
+        # Can be used as dict keys
+        stages_dict = {stage1: "value"}
+        assert stages_dict[stage2] == "value"
+
+    def test_skill_gap_is_hashable(self) -> None:
+        """Test SkillGap is hashable and can be used in sets/dicts."""
+        gap1 = SkillGap(skill="Python", severity="low", mitigation="Learning")
+        gap2 = SkillGap(skill="Python", severity="low", mitigation="Learning")
+        gap3 = SkillGap(skill="Docker", severity="medium")
+
+        # Should be hashable
+        assert hash(gap1) is not None
+
+        # Can be used in sets
+        gaps_set = {gap1, gap2, gap3}
+        assert len(gaps_set) == 2  # gap1 and gap2 are identical
+
+        # Can be used as dict keys
+        gaps_dict = {gap1: "first", gap3: "second"}
+        assert len(gaps_dict) == 2
+
+    def test_frozen_models_support_copy_with_modifications(self, sample_sentiment_trend_data: Dict[str, Any]) -> None:
+        """Test frozen models can create modified copies using model_copy."""
+        original = SentimentTrend(**sample_sentiment_trend_data)
+
+        # Create a modified copy
+        modified = original.model_copy(update={"current": "negative"})
+
+        # Original should be unchanged
+        assert original.current == sample_sentiment_trend_data["current"]
+        # Modified should have new value
+        assert modified.current == "negative"
+        # Other fields should be the same
+        assert modified.initial == original.initial

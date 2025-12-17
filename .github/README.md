@@ -24,7 +24,7 @@ Create a Personal Access Token (PAT) with the following permissions:
 
 1. Go to GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens
 2. Click "Generate new token"
-3. Select the repository: `jaodsilv/ai-message-writer-assistant`  <!-- TODO: Update when repository is renamed to 'chosen' -->
+3. Select the repository: `jaodsilv/chosen`
 4. Set expiration as needed
 5. Grant the following permissions:
    - **Issues**: Read and write
@@ -43,17 +43,20 @@ Create a Personal Access Token (PAT) with the following permissions:
 ## Workflow Files
 
 ### `add-issues-to-project.yml`
+
 - **Triggers**: When issues are opened or labeled
 - **Function**: Automatically adds issues with specific labels to Project 3
 - **Labels that trigger**: `enhancement`, `feature`, `bug`
 - **Additional**: Sets priority and phase fields based on labels
 
 ### `add-prs-to-project.yml`
+
 - **Triggers**: When pull requests are opened or labeled
 - **Function**: Automatically adds PRs to Project 3 and sets status to "In Progress"
 - **Labels that trigger**: `enhancement`, `feature`, `bug`, `hotfix`
 
 ### `project-automation.yml`
+
 - **Triggers**: When issues/PRs are closed, merged, or reopened
 - **Function**: Updates project status fields automatically
 - **Status Updates**:
@@ -65,12 +68,14 @@ Create a Personal Access Token (PAT) with the following permissions:
 ## Issue Templates
 
 ### `enhancement.yml`
+
 - Structured template for enhancement requests
 - Automatically applies `enhancement` label
 - Includes priority and phase dropdowns
 - Triggers automatic project addition
 
 ### `bug_report.yml`
+
 - Structured template for bug reports
 - Automatically applies `bug` label
 - Includes priority selection and browser information
@@ -81,12 +86,14 @@ Create a Personal Access Token (PAT) with the following permissions:
 The workflows use labels to determine:
 
 ### Priority Mapping
+
 - `critical` → Critical priority
 - `high` → High priority
 - `medium` → Medium priority
 - `low` → Low priority
 
 ### Phase Mapping
+
 - `phase-1` → "Phase 1: Foundation"
 - `phase-2` → "Phase 2: State Management"
 - `phase-3` → "Phase 3: Core Features"
