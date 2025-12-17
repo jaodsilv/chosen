@@ -1,4 +1,4 @@
-# CHOSEN v2 - Docker Compose Configuration
+# CHOSEN - Docker Compose Configuration
 version: '3.8'
 
 services:
