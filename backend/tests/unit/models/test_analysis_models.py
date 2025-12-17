@@ -601,9 +601,7 @@ class TestSkillGapSerialization:
 class TestFrozenValueObjects:
     """Test suite for frozen (immutable) value objects."""
 
-    def test_sentiment_trend_is_immutable(
-        self, sample_sentiment_trend_data: Dict[str, Any]
-    ) -> None:
+    def test_sentiment_trend_is_immutable(self, sample_sentiment_trend_data: Dict[str, Any]) -> None:
         """Test SentimentTrend cannot be modified after creation."""
         trend = SentimentTrend(**sample_sentiment_trend_data)
 
@@ -612,9 +610,7 @@ class TestFrozenValueObjects:
 
         assert "frozen" in str(exc_info.value).lower()
 
-    def test_conversation_stage_is_immutable(
-        self, sample_conversation_stage_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_stage_is_immutable(self, sample_conversation_stage_data: Dict[str, Any]) -> None:
         """Test ConversationStage cannot be modified after creation."""
         stage = ConversationStage(**sample_conversation_stage_data)
 
@@ -632,9 +628,7 @@ class TestFrozenValueObjects:
 
         assert "frozen" in str(exc_info.value).lower()
 
-    def test_sentiment_trend_is_hashable(
-        self, sample_sentiment_trend_data: Dict[str, Any]
-    ) -> None:
+    def test_sentiment_trend_is_hashable(self, sample_sentiment_trend_data: Dict[str, Any]) -> None:
         """Test SentimentTrend is hashable and can be used in sets/dicts."""
         trend1 = SentimentTrend(**sample_sentiment_trend_data)
         trend2 = SentimentTrend(**sample_sentiment_trend_data)
@@ -651,9 +645,7 @@ class TestFrozenValueObjects:
         trends_dict = {trend1: "first", trend2: "second"}
         assert trends_dict[trend1] == "second"  # Second overwrites first
 
-    def test_conversation_stage_is_hashable(
-        self, sample_conversation_stage_data: Dict[str, Any]
-    ) -> None:
+    def test_conversation_stage_is_hashable(self, sample_conversation_stage_data: Dict[str, Any]) -> None:
         """Test ConversationStage is hashable and can be used in sets/dicts."""
         stage1 = ConversationStage(**sample_conversation_stage_data)
         stage2 = ConversationStage(**sample_conversation_stage_data)
@@ -686,9 +678,7 @@ class TestFrozenValueObjects:
         gaps_dict = {gap1: "first", gap3: "second"}
         assert len(gaps_dict) == 2
 
-    def test_frozen_models_support_copy_with_modifications(
-        self, sample_sentiment_trend_data: Dict[str, Any]
-    ) -> None:
+    def test_frozen_models_support_copy_with_modifications(self, sample_sentiment_trend_data: Dict[str, Any]) -> None:
         """Test frozen models can create modified copies using model_copy."""
         original = SentimentTrend(**sample_sentiment_trend_data)
 

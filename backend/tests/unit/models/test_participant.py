@@ -244,9 +244,7 @@ class TestParticipantEmailValidation:
 class TestParticipantFrozen:
     """Test suite for Participant frozen (immutable) behavior."""
 
-    def test_participant_is_immutable(
-        self, sample_participant_data: Dict[str, Any]
-    ) -> None:
+    def test_participant_is_immutable(self, sample_participant_data: Dict[str, Any]) -> None:
         """Test Participant cannot be modified after creation."""
         participant = Participant(**sample_participant_data)
 
@@ -255,9 +253,7 @@ class TestParticipantFrozen:
 
         assert "frozen" in str(exc_info.value).lower()
 
-    def test_participant_role_is_immutable(
-        self, sample_participant_data: Dict[str, Any]
-    ) -> None:
+    def test_participant_role_is_immutable(self, sample_participant_data: Dict[str, Any]) -> None:
         """Test Participant role cannot be modified after creation."""
         participant = Participant(**sample_participant_data)
 
@@ -266,9 +262,7 @@ class TestParticipantFrozen:
 
         assert "frozen" in str(exc_info.value).lower()
 
-    def test_participant_is_hashable(
-        self, sample_participant_data: Dict[str, Any]
-    ) -> None:
+    def test_participant_is_hashable(self, sample_participant_data: Dict[str, Any]) -> None:
         """Test Participant is hashable and can be used in sets/dicts."""
         participant1 = Participant(**sample_participant_data)
         participant2 = Participant(**sample_participant_data)
@@ -294,9 +288,7 @@ class TestParticipantFrozen:
         participants_set = {participant1, participant2}
         assert len(participants_set) == 2
 
-    def test_participant_supports_copy_with_modifications(
-        self, sample_participant_data: Dict[str, Any]
-    ) -> None:
+    def test_participant_supports_copy_with_modifications(self, sample_participant_data: Dict[str, Any]) -> None:
         """Test Participant can create modified copies using model_copy."""
         original = Participant(**sample_participant_data)
 
