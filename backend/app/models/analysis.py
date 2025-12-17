@@ -18,7 +18,7 @@ Design Note - Immutable Value Objects:
 """
 
 from datetime import datetime
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -47,7 +47,7 @@ class SentimentTrend(BaseModel):
     initial: SentimentValue
     current: SentimentValue
     direction: SentimentDirection
-    indicators: tuple[str, ...]
+    indicators: Tuple[str, ...]
 
 
 class ConversationStage(BaseModel):
