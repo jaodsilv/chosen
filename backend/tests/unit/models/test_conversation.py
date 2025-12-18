@@ -569,6 +569,7 @@ class TestConversationArchiveValidation:
         assert conv.archived_at.tzinfo is not None
         # Verify specifically UTC timezone
         from datetime import timezone
+
         assert conv.archived_at.tzinfo == timezone.utc
 
     def test_archived_true_with_none_archive_reason(self) -> None:
