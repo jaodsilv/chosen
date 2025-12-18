@@ -450,3 +450,90 @@ class TestConversationEdgeCases:
             ],
         )
         assert len(conv.related_conversation_ids) == 3
+
+
+@pytest.mark.unit
+class TestConversationArchiveValidation:
+    """Test suite for Conversation archive consistency validation.
+
+    These tests verify that:
+    - archived_at is auto-populated when archived=True
+    - archived_at and archive_reason are cleared when archived=False
+    - Explicit timestamps are preserved when provided
+    """
+
+    def test_archived_true_auto_populates_archived_at(self) -> None:
+        """Test that archived_at is auto-populated when archived=True and not provided."""
+        conv = Conversation(
+            platform=Platform.LINKEDIN,
+            recruiter_name="Test",
+            archived=True,
+        )
+        assert conv.archived is True
+        assert conv.archived_at is not None
+        assert isinstance(conv.archived_at, datetime)
+
+    def test_archived_true_preserves_provided_archived_at(self, fixed_datetime: datetime) -> None:
+        """Test that explicit archived_at is preserved when archived=True."""
+        conv = Conversation(
+            platform=Platform.LINKEDIN,
+            recruiter_name="Test",
+            archived=True,
+            archived_at=fixed_datetime,
+        )
+        assert conv.archived is True
+        assert conv.archived_at == fixed_datetime
+
+    def test_archived_false_clears_archived_at(self, fixed_datetime: datetime) -> None:
+        """Test that archived_at is cleared when archived=False."""
+        conv = Conversation(
+            platform=Platform.LINKEDIN,
+            recruiter_name="Test",
+            archived=False,
+            archived_at=fixed_datetime,  # This should be cleared
+        )
+        assert conv.archived is False
+        assert conv.archived_at is None
+
+    def test_archived_false_clears_archive_reason(self) -> None:
+        """Test that archive_reason is cleared when archived=False."""
+        conv = Conversation(
+            platform=Platform.LINKEDIN,
+            recruiter_name="Test",
+            archived=False,
+            archive_reason="Old reason",  # This should be cleared
+        )
+        assert conv.archived is False
+        assert conv.archive_reason is None
+
+    def test_archived_with_reason_preserves_reason(self, fixed_datetime: datetime) -> None:
+        """Test that archive_reason is preserved when archived=True."""
+        conv = Conversation(
+            platform=Platform.LINKEDIN,
+            recruiter_name="Test",
+            archived=True,
+            archived_at=fixed_datetime,
+            archive_reason="Position filled",
+        )
+        assert conv.archived is True
+        assert conv.archive_reason == "Position filled"
+
+    def test_default_unarchived_conversation_has_no_archive_fields(self) -> None:
+        """Test that default conversation has no archive fields set."""
+        conv = Conversation(
+            platform=Platform.LINKEDIN,
+            recruiter_name="Test",
+        )
+        assert conv.archived is False
+        assert conv.archived_at is None
+        assert conv.archive_reason is None
+
+    def test_archived_at_timestamp_is_timezone_aware(self) -> None:
+        """Test that auto-populated archived_at is timezone-aware UTC."""
+        conv = Conversation(
+            platform=Platform.LINKEDIN,
+            recruiter_name="Test",
+            archived=True,
+        )
+        assert conv.archived_at is not None
+        assert conv.archived_at.tzinfo is not None

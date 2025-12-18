@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.models.analysis import ContextAnalysis, JobFitScore
 from app.models.enums import Platform, ProcessStatus
@@ -38,9 +38,15 @@ class Conversation(BaseModel):
         job_description_filepath: Path to job description file.
         resume_filepath: Path to resume used for this application.
         archived: Whether the conversation is archived.
-        archived_at: When the conversation was archived.
+        archived_at: When the conversation was archived (auto-populated when archived=True).
         archive_reason: Reason for archiving.
         related_conversation_ids: IDs of related conversations.
+
+    Archive Behavior:
+        When archived=True: archived_at is auto-populated with current UTC timestamp
+            if not explicitly provided.
+        When archived=False: archived_at and archive_reason are automatically cleared
+            to maintain data consistency.
     """
 
     model_config = ConfigDict(use_enum_values=True)
@@ -71,3 +77,25 @@ class Conversation(BaseModel):
     def validate_filepath(cls, v: Optional[str]) -> Optional[str]:
         """Validate that filepaths are within the data directory."""
         return validate_path_in_data_dir(v)
+
+    @model_validator(mode="after")
+    def validate_archive_consistency(self) -> "Conversation":
+        """Ensure archive fields are consistent.
+
+        When archived=True: archived_at is auto-populated with current UTC
+            timestamp if not explicitly provided.
+        When archived=False: archived_at and archive_reason are cleared to
+            maintain data consistency.
+
+        Returns:
+            The validated Conversation instance.
+        """
+        if self.archived:
+            if self.archived_at is None:
+                object.__setattr__(self, "archived_at", datetime.now(timezone.utc))
+        else:
+            if self.archived_at is not None:
+                object.__setattr__(self, "archived_at", None)
+            if self.archive_reason is not None:
+                object.__setattr__(self, "archive_reason", None)
+        return self
