@@ -44,9 +44,10 @@ class Conversation(BaseModel):
 
     Archive Behavior:
         When archived=True: archived_at is auto-populated with current UTC timestamp
-            if not explicitly provided.
-        When archived=False: archived_at and archive_reason are automatically cleared
-            to maintain data consistency.
+            if not explicitly provided. archive_reason is optional.
+        When archived=False: archived_at and archive_reason must not be provided.
+            Passing these fields with archived=False raises a ValidationError to
+            prevent silent data loss and ensure explicit intent.
     """
 
     model_config = ConfigDict(use_enum_values=True)
@@ -84,18 +85,32 @@ class Conversation(BaseModel):
 
         When archived=True: archived_at is auto-populated with current UTC
             timestamp if not explicitly provided.
-        When archived=False: archived_at and archive_reason are cleared to
-            maintain data consistency.
+        When archived=False: archived_at and archive_reason must not be
+            provided. Passing these fields with archived=False raises a
+            ValueError to prevent silent data loss.
 
         Returns:
-            The validated Conversation instance.
+            The validated Conversation instance (may be mutated to set
+            archived_at when archived=True).
+
+        Raises:
+            ValueError: If archived=False but archived_at or archive_reason
+                is provided. This prevents silent data loss and ensures
+                explicit intent when managing archive state.
         """
         if self.archived:
             if self.archived_at is None:
                 object.__setattr__(self, "archived_at", datetime.now(timezone.utc))
         else:
-            if self.archived_at is not None:
-                object.__setattr__(self, "archived_at", None)
-            if self.archive_reason is not None:
-                object.__setattr__(self, "archive_reason", None)
+            if self.archived_at is not None or self.archive_reason is not None:
+                provided_fields = []
+                if self.archived_at is not None:
+                    provided_fields.append("archived_at")
+                if self.archive_reason is not None:
+                    provided_fields.append("archive_reason")
+                raise ValueError(
+                    f"Cannot set {', '.join(provided_fields)} when archived=False. "
+                    "Either set archived=True or remove the archive fields. "
+                    "This validation prevents silent data loss."
+                )
         return self
