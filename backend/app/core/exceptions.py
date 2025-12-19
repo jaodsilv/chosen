@@ -122,3 +122,110 @@ class ExternalServiceError(AppException):
             error_type="EXTERNAL_SERVICE_ERROR",
             details=details,
         )
+
+
+# =============================================================================
+# File Operation Exceptions
+# =============================================================================
+
+
+class FileOperationError(AppException):
+    """Base exception for file operation errors."""
+
+    def __init__(
+        self,
+        message: str = "File operation failed",
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        super().__init__(
+            message=message,
+            status_code=500,
+            error_type="FILE_OPERATION_ERROR",
+            details=details,
+        )
+
+
+class FileNotFoundError(FileOperationError):
+    """File not found error."""
+
+    def __init__(
+        self,
+        message: str = "File not found",
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        # Call AppException.__init__ directly to set correct status code
+        AppException.__init__(
+            self,
+            message=message,
+            status_code=404,
+            error_type="FILE_NOT_FOUND",
+            details=details,
+        )
+
+
+class FileAccessError(FileOperationError):
+    """File access denied error (permission issues)."""
+
+    def __init__(
+        self,
+        message: str = "File access denied",
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        AppException.__init__(
+            self,
+            message=message,
+            status_code=403,
+            error_type="FILE_ACCESS_DENIED",
+            details=details,
+        )
+
+
+class FileLockError(FileOperationError):
+    """File lock acquisition failed."""
+
+    def __init__(
+        self,
+        message: str = "Failed to acquire file lock",
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        AppException.__init__(
+            self,
+            message=message,
+            status_code=409,
+            error_type="FILE_LOCK_ERROR",
+            details=details,
+        )
+
+
+class DirectoryNotFoundError(FileOperationError):
+    """Directory not found error."""
+
+    def __init__(
+        self,
+        message: str = "Directory not found",
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        AppException.__init__(
+            self,
+            message=message,
+            status_code=404,
+            error_type="DIRECTORY_NOT_FOUND",
+            details=details,
+        )
+
+
+class DirectoryNotEmptyError(FileOperationError):
+    """Directory not empty error (cannot delete non-empty directory)."""
+
+    def __init__(
+        self,
+        message: str = "Directory is not empty",
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        AppException.__init__(
+            self,
+            message=message,
+            status_code=409,
+            error_type="DIRECTORY_NOT_EMPTY",
+            details=details,
+        )
