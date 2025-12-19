@@ -145,8 +145,13 @@ class FileOperationError(AppException):
         )
 
 
-class FileNotFoundError(FileOperationError):
-    """File not found error."""
+class AppFileNotFoundError(FileOperationError):
+    """File not found error.
+
+    Note:
+        Named AppFileNotFoundError to avoid shadowing Python's built-in
+        FileNotFoundError.
+    """
 
     def __init__(
         self,

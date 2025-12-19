@@ -15,15 +15,14 @@ from unittest.mock import patch
 import pytest
 
 from app.core.exceptions import (
+    AppFileNotFoundError,
     DirectoryNotEmptyError,
     DirectoryNotFoundError,
     FileAccessError,
     FileLockError,
-    FileNotFoundError,
     FileOperationError,
 )
 from app.data.file_handler import FileHandler, FileInfo, FileLock
-
 
 # =============================================================================
 # Fixtures
@@ -90,12 +89,12 @@ class TestFileHandlerRead:
         assert content == sample_unicode_content
 
     async def test_read_file_not_found_raises_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
-        """Test reading a non-existent file raises FileNotFoundError."""
+        """Test reading a non-existent file raises AppFileNotFoundError."""
         # Arrange
         non_existent = tmp_path / "does_not_exist.txt"
 
         # Act & Assert
-        with pytest.raises(FileNotFoundError) as exc_info:
+        with pytest.raises(AppFileNotFoundError) as exc_info:
             await file_handler.read_file(non_existent)
 
         assert exc_info.value.status_code == 404
@@ -128,12 +127,12 @@ class TestFileHandlerRead:
         assert content == sample_bytes_content
 
     async def test_read_bytes_not_found_raises_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
-        """Test reading non-existent binary file raises FileNotFoundError."""
+        """Test reading non-existent binary file raises AppFileNotFoundError."""
         # Arrange
         non_existent = tmp_path / "does_not_exist.bin"
 
         # Act & Assert
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(AppFileNotFoundError):
             await file_handler.read_bytes(non_existent)
 
 
@@ -362,6 +361,15 @@ class TestFileHandlerDirectory:
         await file_handler.create_directory(existing_dir)
         assert existing_dir.exists()
 
+    async def test_create_directory_without_parents_fails(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test creating directory without parents when parent doesn't exist raises error."""
+        # Arrange
+        nested_dir = tmp_path / "nonexistent_parent" / "child"
+
+        # Act & Assert
+        with pytest.raises(FileOperationError):
+            await file_handler.create_directory(nested_dir, parents=False)
+
     async def test_list_directory(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test listing directory contents."""
         # Arrange
@@ -552,12 +560,12 @@ class TestFileHandlerInfo:
         assert info.is_directory is True
 
     async def test_get_file_info_not_found_raises_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
-        """Test getting info for non-existent path raises FileNotFoundError."""
+        """Test getting info for non-existent path raises AppFileNotFoundError."""
         # Arrange
         non_existent = tmp_path / "does_not_exist.txt"
 
         # Act & Assert
-        with pytest.raises(FileNotFoundError) as exc_info:
+        with pytest.raises(AppFileNotFoundError) as exc_info:
             await file_handler.get_file_info(non_existent)
 
         assert exc_info.value.status_code == 404
@@ -647,6 +655,42 @@ class TestFileHandlerLocking:
         # Act & Assert (should not raise)
         await file_handler.release_lock(lock)
 
+    async def test_lock_released_on_exception(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test that lock is released when exception occurs in context manager."""
+        # Arrange
+        test_file = tmp_path / "exception_lock.txt"
+        test_file.write_text("content", encoding="utf-8")
+
+        # Act - Exception should not prevent lock release
+        with pytest.raises(ValueError):
+            async with file_handler.locked(test_file) as lock:
+                assert isinstance(lock, FileLock)
+                raise ValueError("Test exception")
+
+        # Assert - Lock should be released, allowing new acquisition
+        new_lock = await file_handler.acquire_lock(test_file, timeout=0.1)
+        assert isinstance(new_lock, FileLock)
+        await file_handler.release_lock(new_lock)
+
+    async def test_lock_zero_timeout(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test lock acquisition with zero timeout fails immediately if locked."""
+        # Arrange
+        test_file = tmp_path / "zero_timeout.txt"
+        test_file.write_text("content", encoding="utf-8")
+
+        # Acquire first lock
+        lock1 = await file_handler.acquire_lock(test_file)
+
+        # Act & Assert - Try with zero timeout, should fail immediately
+        with pytest.raises(FileLockError) as exc_info:
+            await file_handler.acquire_lock(test_file, timeout=0.0)
+
+        assert "timeout" in exc_info.value.message.lower()
+        assert exc_info.value.details["timeout"] == 0.0
+
+        # Cleanup
+        await file_handler.release_lock(lock1)
+
 
 # =============================================================================
 # Error Handling Tests
@@ -669,9 +713,9 @@ class TestFileHandlerErrors:
         assert error.details == {"path": "/test"}
 
     async def test_file_not_found_error_has_correct_attributes(self) -> None:
-        """Test FileNotFoundError has correct attributes."""
+        """Test AppFileNotFoundError has correct attributes."""
         # Act
-        error = FileNotFoundError("File not found: /test/path")
+        error = AppFileNotFoundError("File not found: /test/path")
 
         # Assert
         assert error.status_code == 404

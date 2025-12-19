@@ -7,17 +7,27 @@ This module provides a comprehensive file handler class that supports:
     - Async operations for non-blocking I/O
     - Comprehensive error handling
 
-Example:
-    >>> handler = FileHandler()
-    >>> await handler.write_file(Path("test.txt"), "Hello, World!")
-    >>> content = await handler.read_file(Path("test.txt"))
-    >>> print(content)
-    Hello, World!
+Example usage::
+
+    import asyncio
+    from pathlib import Path
+    from app.data.file_handler import FileHandler
+
+    async def main():
+        handler = FileHandler()
+        await handler.write_file(Path("test.txt"), "Hello, World!")
+        content = await handler.read_file(Path("test.txt"))
+        print(content)  # Output: Hello, World!
+
+    asyncio.run(main())
 """
 
 import asyncio
+import logging
 import os
 import shutil
+import threading
+import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -25,26 +35,32 @@ from pathlib import Path
 from typing import AsyncIterator, List
 
 from app.core.exceptions import (
+    AppFileNotFoundError,
     DirectoryNotEmptyError,
     DirectoryNotFoundError,
     FileAccessError,
     FileLockError,
-    FileNotFoundError,
     FileOperationError,
 )
 
+logger = logging.getLogger(__name__)
 
-@dataclass
+
+@dataclass(frozen=True)
 class FileInfo:
     """Information about a file or directory.
 
     Attributes:
         path: The path to the file or directory.
         size: The size in bytes (0 for directories).
-        created_at: When the file was created.
+        created_at: When the file was created. Note: Uses st_ctime which is
+            file creation time on Windows, but metadata change time on Unix/Linux.
         modified_at: When the file was last modified.
         is_file: Whether this is a regular file.
         is_directory: Whether this is a directory.
+
+    Raises:
+        ValueError: If both is_file and is_directory are True.
     """
 
     path: Path
@@ -54,8 +70,13 @@ class FileInfo:
     is_file: bool
     is_directory: bool
 
+    def __post_init__(self) -> None:
+        """Validate that is_file and is_directory are mutually exclusive."""
+        if self.is_file and self.is_directory:
+            raise ValueError("FileInfo cannot be both a file and a directory")
 
-@dataclass
+
+@dataclass(frozen=True)
 class FileLock:
     """Represents an acquired file lock.
 
@@ -82,16 +103,19 @@ class FileHandler:
     All file operations are performed with UTF-8 encoding by default.
     Async operations use asyncio.to_thread for non-blocking I/O.
 
-    Example:
-        >>> handler = FileHandler()
-        >>> await handler.write_file(Path("data.txt"), "content")
-        >>> content = await handler.read_file(Path("data.txt"))
+    Example usage::
+
+        handler = FileHandler()
+        # In an async context:
+        content = await handler.read_file(Path("data.txt"))
+        await handler.write_file(Path("output.txt"), content)
     """
 
     def __init__(self) -> None:
         """Initialize the FileHandler."""
         self._encoding = "utf-8"
         self._active_locks: dict[Path, FileLock] = {}
+        self._locks_mutex = threading.Lock()
 
     # =========================================================================
     # File Read Operations
@@ -107,7 +131,7 @@ class FileHandler:
             The file content as a string.
 
         Raises:
-            FileNotFoundError: If the file does not exist.
+            AppFileNotFoundError: If the file does not exist.
             FileAccessError: If there's a permission error.
             FileOperationError: For other file operation errors.
         """
@@ -116,7 +140,7 @@ class FileHandler:
     def _read_file_sync(self, path: Path) -> str:
         """Synchronous implementation of read_file."""
         if not path.exists():
-            raise FileNotFoundError(
+            raise AppFileNotFoundError(
                 message=f"File not found: {path}",
                 details={"path": str(path)},
             )
@@ -144,7 +168,7 @@ class FileHandler:
             The file content as bytes.
 
         Raises:
-            FileNotFoundError: If the file does not exist.
+            AppFileNotFoundError: If the file does not exist.
             FileAccessError: If there's a permission error.
             FileOperationError: For other file operation errors.
         """
@@ -153,7 +177,7 @@ class FileHandler:
     def _read_bytes_sync(self, path: Path) -> bytes:
         """Synchronous implementation of read_bytes."""
         if not path.exists():
-            raise FileNotFoundError(
+            raise AppFileNotFoundError(
                 message=f"File not found: {path}",
                 details={"path": str(path)},
             )
@@ -259,13 +283,17 @@ class FileHandler:
         return await asyncio.to_thread(self._delete_file_sync, path)
 
     def _delete_file_sync(self, path: Path) -> bool:
-        """Synchronous implementation of delete_file."""
-        if not path.exists():
-            return False
+        """Synchronous implementation of delete_file.
 
+        Uses try/except pattern instead of exists() check to avoid TOCTOU
+        race condition where file could be deleted between check and unlink.
+        """
         try:
             path.unlink()
             return True
+        except FileNotFoundError:
+            # Python's built-in FileNotFoundError - file doesn't exist
+            return False
         except PermissionError as e:
             raise FileAccessError(
                 message=f"Permission denied deleting file: {path}",
@@ -303,13 +331,18 @@ class FileHandler:
     async def create_directory(self, path: Path, parents: bool = True) -> None:
         """Create a directory.
 
+        Creates the directory if it does not exist. If the directory already
+        exists, no error is raised (equivalent to mkdir's exist_ok=True behavior).
+
         Args:
             path: Path to the directory to create.
-            parents: If True, create parent directories as needed.
+            parents: If True (default), create parent directories as needed.
+                If False and parent directories don't exist, raises FileOperationError.
 
         Raises:
             FileAccessError: If there's a permission error.
-            FileOperationError: For other file operation errors.
+            FileOperationError: For other file operation errors, including
+                missing parent directories when parents=False.
         """
         await asyncio.to_thread(self._create_directory_sync, path, parents)
 
@@ -449,16 +482,22 @@ class FileHandler:
             FileInfo object with file metadata.
 
         Raises:
-            FileNotFoundError: If the path does not exist.
+            AppFileNotFoundError: If the path does not exist.
             FileAccessError: If there's a permission error.
             FileOperationError: For other file operation errors.
         """
         return await asyncio.to_thread(self._get_file_info_sync, path)
 
     def _get_file_info_sync(self, path: Path) -> FileInfo:
-        """Synchronous implementation of get_file_info."""
+        """Synchronous implementation of get_file_info.
+
+        Note:
+            The created_at field uses st_ctime which represents:
+            - On Windows: The actual file creation time
+            - On Unix/Linux: The last metadata change time (inode change)
+        """
         if not path.exists():
-            raise FileNotFoundError(
+            raise AppFileNotFoundError(
                 message=f"Path not found: {path}",
                 details={"path": str(path)},
             )
@@ -509,7 +548,7 @@ class FileHandler:
             FileLockError: If the lock cannot be acquired within timeout.
         """
         lock_file = path.parent / f".{path.name}.lock"
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.monotonic()
 
         while True:
             # Try to acquire lock
@@ -521,15 +560,21 @@ class FileHandler:
                     acquired_at=datetime.now(timezone.utc),
                     lock_file=lock_file,
                 )
-                self._active_locks[path] = lock
+                with self._locks_mutex:
+                    self._active_locks[path] = lock
                 return lock
 
             # Check timeout
-            elapsed = asyncio.get_event_loop().time() - start_time
+            elapsed = time.monotonic() - start_time
             if elapsed >= timeout:
                 raise FileLockError(
                     message=f"Timeout acquiring lock for: {path}",
-                    details={"path": str(path), "timeout": timeout},
+                    details={
+                        "path": str(path),
+                        "timeout": timeout,
+                        "lock_file": str(lock_file),
+                        "lock_file_exists": lock_file.exists(),
+                    },
                 )
 
             # Wait a bit before retrying
@@ -549,8 +594,11 @@ class FileHandler:
             os.close(fd)
             return True
         except FileExistsError:
+            # Lock already held by another process - expected behavior
             return False
-        except OSError:
+        except OSError as e:
+            # Unexpected error (disk full, permission denied, etc.)
+            logger.debug(f"Failed to acquire lock for {path}: {e}")
             return False
 
     async def release_lock(self, lock: FileLock) -> None:
@@ -561,18 +609,19 @@ class FileHandler:
         """
         await asyncio.to_thread(self._release_lock_sync, lock)
 
-        # Remove from active locks
-        if lock.path in self._active_locks:
-            del self._active_locks[lock.path]
+        # Remove from active locks with thread safety
+        with self._locks_mutex:
+            if lock.path in self._active_locks:
+                del self._active_locks[lock.path]
 
     def _release_lock_sync(self, lock: FileLock) -> None:
         """Synchronous implementation of release_lock."""
         try:
             if lock.lock_file.exists():
                 lock.lock_file.unlink()
-        except OSError:
-            # Ignore errors when releasing lock
-            pass
+        except OSError as e:
+            # Log but don't raise - lock release should be best-effort
+            logger.warning(f"Failed to release lock file {lock.lock_file}: {e}")
 
     @asynccontextmanager
     async def locked(self, path: Path, timeout: float = 10.0) -> AsyncIterator[FileLock]:
@@ -588,9 +637,10 @@ class FileHandler:
         Raises:
             FileLockError: If the lock cannot be acquired within timeout.
 
-        Example:
-            >>> async with handler.locked(Path("file.txt")) as lock:
-            ...     await handler.write_file(Path("file.txt"), "content")
+        Example usage::
+
+            async with handler.locked(Path("file.txt")) as lock:
+                await handler.write_file(Path("file.txt"), "content")
         """
         lock = await self.acquire_lock(path, timeout)
         try:
