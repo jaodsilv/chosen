@@ -27,7 +27,7 @@
 
 ### 1.1 Purpose
 
-This document defines the multi-agent development process for implementing CHOSEN. It adapts the base coding-task-workflow.md to this specific project's needs, providing practical guidance for developers working with Claude Code.
+This document defines the multi-agent development process for implementing the AI Message Writer Assistant v2. It adapts the base coding-task-workflow.md to this specific project's needs, providing practical guidance for developers working with Claude Code.
 
 ### 1.2 Key Principles
 
@@ -542,26 +542,24 @@ Examples:
 
 ### 3.3 Worktree Location
 
-Example structure (paths may vary by developer):
 ```
-Base: {PROJECTS_DIR}/chosen/
-Main: {PROJECTS_DIR}/chosen/main/
-Worktrees: {PROJECTS_DIR}/chosen/<branch-name>/
+Base: D:\src\chosen\
+Main: D:\src\chosen\v2\
+Worktrees: D:\src\chosen\<branch-name>\
 ```
 
 ### 3.4 Worktree Creation Process
 
 ```bash
 # From main branch working directory
-cd {PROJECTS_DIR}/chosen/main
+cd D:\src\chosen\v2
 
 # Create worktree
 git worktree add -b feature/task-name ../task-name
 
 # Link data folder (if needed)
 cd ../task-name
-mklink /J data ../main/data   # Windows
-# ln -s ../main/data data     # Unix
+mklink /J data ..\v2\data
 
 # Verify
 git branch --show-current
@@ -584,7 +582,7 @@ ls data  # Should show linked directory
 
 ```bash
 # After PR is merged
-cd {PROJECTS_DIR}/chosen/main
+cd D:\src\chosen\v2
 git worktree remove ../task-name
 git branch -d feature/task-name
 ```
@@ -1809,10 +1807,10 @@ Documentation Workflow:
    - >90% test coverage
 
 2. Create Worktree
-   cd {PROJECTS_DIR}/chosen/main
+   cd D:\src\chosen\v2
    git worktree add -b feature/conversation-repository ../conversation-repository
    cd ../conversation-repository
-   mklink /J data ../main/data  # Windows
+   mklink /J data ..\v2\data
 
 3. Initialize TodoWrite
    TodoWrite:
@@ -1839,7 +1837,7 @@ Documentation Workflow:
 5. /compact
    Remember:
    - Task: ConversationRepository
-   - Worktree: ../conversation-repository
+   - Worktree: D:\src\chosen\conversation-repository
    - Test design: [summary]
    - Current step: 2 (implement tests)
 
@@ -1847,7 +1845,7 @@ Documentation Workflow:
    Task: Implement unit tests based on design
 
    Input: Test design document
-   Output: backend/tests/unit/test_conversation_repo.py
+   Output: D:\...\tests\unit\test_conversation_repo.py
 
    Update TodoWrite: Step 2 → completed, Step 3 → in_progress
 
@@ -1859,7 +1857,7 @@ Documentation Workflow:
 8. /compact
    Remember:
    - Task: ConversationRepository
-   - Worktree: ../conversation-repository
+   - Worktree: D:\src\chosen\conversation-repository
    - Tests: Failing as expected
    - Current step: 3 (design solution)
 
@@ -1878,7 +1876,7 @@ Documentation Workflow:
 10. /compact
     Remember:
     - Task: ConversationRepository
-    - Worktree: ../conversation-repository
+    - Worktree: D:\src\chosen\conversation-repository
     - Design: [summary]
     - Current step: 4 (implement)
 
@@ -1886,7 +1884,7 @@ Documentation Workflow:
     Task: Implement ConversationRepository
 
     Input: Design document, failing tests
-    Output: backend/app/data/conversation_repo.py
+    Output: D:\...\app\data\conversation_repo.py
 
     Update TodoWrite: Step 4 → completed, Step 5 → in_progress
 
@@ -1898,7 +1896,7 @@ Documentation Workflow:
 13. /compact
     Remember:
     - Task: ConversationRepository
-    - Worktree: ../conversation-repository
+    - Worktree: D:\src\chosen\conversation-repository
     - Implementation: Complete, tests passing
     - Current step: 5 (review)
 
@@ -1919,7 +1917,7 @@ Documentation Workflow:
 15. /compact
     Remember:
     - Task: ConversationRepository
-    - Worktree: ../conversation-repository
+    - Worktree: D:\src\chosen\conversation-repository
     - Status: Code reviewed and approved
     - Current step: 6 (integration tests)
 
@@ -1983,7 +1981,7 @@ Documentation Workflow:
     gh pr merge --squash
 
 25. Cleanup
-    cd {PROJECTS_DIR}/chosen/main
+    cd D:\src\chosen\v2
     git worktree remove ../conversation-repository
     git branch -d feature/conversation-repository
 

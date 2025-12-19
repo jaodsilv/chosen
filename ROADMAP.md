@@ -159,10 +159,10 @@ To get a minimal working system:
 
 ## References
 
-- [SYSTEM-DESIGN.md](./docs/SYSTEM-DESIGN.md) - Technical architecture
-- [DEV-PLAN.md](./docs/DEV-PLAN.md) - Development phases
-- [requirements.md](./docs/requirements.md) - Product requirements
-- [INTERFACE-DESIGN.md](./docs/INTERFACE-DESIGN.md) - UI/UX specification
+- [SYSTEM-DESIGN.md](docs/SYSTEM-DESIGN.md) - Technical architecture
+- [DEV-PLAN.md](docs/DEV-PLAN.md) - Development phases
+- [requirements.md](docs/requirements.md) - Product requirements
+- [INTERFACE-DESIGN.md](docs/INTERFACE-DESIGN.md) - UI/UX specification
 
 ---
 
