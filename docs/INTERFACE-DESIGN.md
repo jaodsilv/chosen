@@ -1,8 +1,8 @@
-# V2 Interface Design Specification
+# CHOSEN - Interface Design Specification
 
 **Created**: 2025-12-09
 **Status**: Draft - Comprehensive Design
-**Purpose**: Complete interface design for AI Message Writer Assistant v2
+**Purpose**: Complete interface design for CHOSEN
 
 ---
 

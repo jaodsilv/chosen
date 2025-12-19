@@ -3,7 +3,7 @@
 **Version**: 2.0.0
 **Created**: 2025-12-09
 **Status**: Development Process Specification
-**Purpose**: Define practical multi-agent workflows for AI Message Writer Assistant v2 implementation
+**Purpose**: Define practical multi-agent workflows for CHOSEN implementation
 
 ---
 
@@ -27,7 +27,7 @@
 
 ### 1.1 Purpose
 
-This document defines the multi-agent development process for implementing the AI Message Writer Assistant v2. It adapts the base coding-task-workflow.md to this specific project's needs, providing practical guidance for developers working with Claude Code.
+This document defines the multi-agent development process for implementing CHOSEN. It adapts the base coding-task-workflow.md to this specific project's needs, providing practical guidance for developers working with Claude Code.
 
 ### 1.2 Key Principles
 
@@ -89,8 +89,8 @@ Task: Design tests for ConversationRepository
 Create comprehensive test design for the ConversationRepository class.
 
 Context:
-- File: D:/src/chosen/v2/backend/app/data/conversation_repo.py
-- System Design: D:/src/chosen/.thoughts/v2/SYSTEM-DESIGN.md
+- File: backend/app/data/conversation_repo.py
+- System Design: docs/SYSTEM-DESIGN.md
 
 Design should include:
 1. Unit tests for each CRUD operation
@@ -168,9 +168,9 @@ Task: Design ConversationRepository implementation
 
 Design the implementation for ConversationRepository that will make the tests pass.
 
-Tests: D:/src/chosen/v2/backend/tests/unit/test_conversation_repo.py
+Tests: backend/tests/unit/test_conversation_repo.py
 Interface: Must extend RepositoryBase
-System Design: See SYSTEM-DESIGN.md section 5.4
+System Design: See docs/SYSTEM-DESIGN.md section 5.4
 
 Design should include:
 1. Method implementations
@@ -211,7 +211,7 @@ Task: Implement ConversationRepository
 Implement the ConversationRepository based on the approved design.
 
 Design: [paste design document]
-Tests: D:/src/chosen/v2/backend/tests/unit/test_conversation_repo.py
+Tests: backend/tests/unit/test_conversation_repo.py
 
 Requirements:
 - Make all tests pass
@@ -253,8 +253,8 @@ Task: Review ConversationRepository implementation
 
 Review the ConversationRepository implementation for quality and correctness.
 
-Implementation: D:/src/chosen/v2/backend/app/data/conversation_repo.py
-Tests: D:/src/chosen/v2/backend/tests/unit/test_conversation_repo.py
+Implementation: backend/app/data/conversation_repo.py
+Tests: backend/tests/unit/test_conversation_repo.py
 Design: [paste design document]
 
 Check for:
@@ -297,8 +297,8 @@ Task: Evaluate ConversationRepository for refactoring
 
 Analyze the ConversationRepository implementation and determine if refactoring is needed.
 
-Code: D:/src/chosen/v2/backend/app/data/conversation_repo.py
-Tests: D:/src/chosen/v2/backend/tests/unit/test_conversation_repo.py
+Code: backend/app/data/conversation_repo.py
+Tests: backend/tests/unit/test_conversation_repo.py
 
 Evaluate:
 1. Method length and complexity
@@ -542,24 +542,26 @@ Examples:
 
 ### 3.3 Worktree Location
 
+Example structure (paths may vary by developer):
 ```
-Base: D:\src\chosen\
-Main: D:\src\chosen\v2\
-Worktrees: D:\src\chosen\<branch-name>\
+Base: {PROJECTS_DIR}/chosen/
+Main: {PROJECTS_DIR}/chosen/main/
+Worktrees: {PROJECTS_DIR}/chosen/<branch-name>/
 ```
 
 ### 3.4 Worktree Creation Process
 
 ```bash
 # From main branch working directory
-cd D:\src\chosen\v2
+cd {PROJECTS_DIR}/chosen/main
 
 # Create worktree
 git worktree add -b feature/task-name ../task-name
 
 # Link data folder (if needed)
 cd ../task-name
-mklink /J data ..\v2\data
+mklink /J data ../main/data   # Windows
+# ln -s ../main/data data     # Unix
 
 # Verify
 git branch --show-current
@@ -582,7 +584,7 @@ ls data  # Should show linked directory
 
 ```bash
 # After PR is merged
-cd D:\src\chosen\v2
+cd {PROJECTS_DIR}/chosen/main
 git worktree remove ../task-name
 git branch -d feature/task-name
 ```
@@ -1807,10 +1809,10 @@ Documentation Workflow:
    - >90% test coverage
 
 2. Create Worktree
-   cd D:\src\chosen\v2
+   cd {PROJECTS_DIR}/chosen/main
    git worktree add -b feature/conversation-repository ../conversation-repository
    cd ../conversation-repository
-   mklink /J data ..\v2\data
+   mklink /J data ../main/data  # Windows
 
 3. Initialize TodoWrite
    TodoWrite:
@@ -1837,7 +1839,7 @@ Documentation Workflow:
 5. /compact
    Remember:
    - Task: ConversationRepository
-   - Worktree: D:\src\chosen\conversation-repository
+   - Worktree: ../conversation-repository
    - Test design: [summary]
    - Current step: 2 (implement tests)
 
@@ -1845,7 +1847,7 @@ Documentation Workflow:
    Task: Implement unit tests based on design
 
    Input: Test design document
-   Output: D:\...\tests\unit\test_conversation_repo.py
+   Output: backend/tests/unit/test_conversation_repo.py
 
    Update TodoWrite: Step 2 → completed, Step 3 → in_progress
 
@@ -1857,7 +1859,7 @@ Documentation Workflow:
 8. /compact
    Remember:
    - Task: ConversationRepository
-   - Worktree: D:\src\chosen\conversation-repository
+   - Worktree: ../conversation-repository
    - Tests: Failing as expected
    - Current step: 3 (design solution)
 
@@ -1876,7 +1878,7 @@ Documentation Workflow:
 10. /compact
     Remember:
     - Task: ConversationRepository
-    - Worktree: D:\src\chosen\conversation-repository
+    - Worktree: ../conversation-repository
     - Design: [summary]
     - Current step: 4 (implement)
 
@@ -1884,7 +1886,7 @@ Documentation Workflow:
     Task: Implement ConversationRepository
 
     Input: Design document, failing tests
-    Output: D:\...\app\data\conversation_repo.py
+    Output: backend/app/data/conversation_repo.py
 
     Update TodoWrite: Step 4 → completed, Step 5 → in_progress
 
@@ -1896,7 +1898,7 @@ Documentation Workflow:
 13. /compact
     Remember:
     - Task: ConversationRepository
-    - Worktree: D:\src\chosen\conversation-repository
+    - Worktree: ../conversation-repository
     - Implementation: Complete, tests passing
     - Current step: 5 (review)
 
@@ -1917,7 +1919,7 @@ Documentation Workflow:
 15. /compact
     Remember:
     - Task: ConversationRepository
-    - Worktree: D:\src\chosen\conversation-repository
+    - Worktree: ../conversation-repository
     - Status: Code reviewed and approved
     - Current step: 6 (integration tests)
 
@@ -1981,7 +1983,7 @@ Documentation Workflow:
     gh pr merge --squash
 
 25. Cleanup
-    cd D:\src\chosen\v2
+    cd {PROJECTS_DIR}/chosen/main
     git worktree remove ../conversation-repository
     git branch -d feature/conversation-repository
 

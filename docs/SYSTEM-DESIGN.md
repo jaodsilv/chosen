@@ -1,4 +1,4 @@
-# AI Message Writer Assistant - V2 System Design
+# CHOSEN - System Design
 
 **Version**: 2.0.0
 **Created**: 2025-12-09
@@ -27,7 +27,7 @@
 
 ### 1.1 System Purpose
 
-The AI Message Writer Assistant v2 is a comprehensive system designed to automate and enhance professional recruitment communication. It combines intelligent conversation analysis, strategic response generation, and data-driven insights to help users manage job hunting workflows efficiently.
+CHOSEN (Candidate's Helper for Optimized Seeker-Employer Networking) is a comprehensive system designed to automate and enhance professional recruitment communication. It combines intelligent conversation analysis, strategic response generation, and data-driven insights to help users manage job hunting workflows efficiently.
 
 ### 1.2 Key Design Principles
 
@@ -334,7 +334,7 @@ logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
-    title="AI Message Writer Assistant API",
+    title="CHOSEN API",
     description="Backend API for intelligent recruitment communication",
     version="2.0.0",
     docs_url="/api/docs",
@@ -403,7 +403,7 @@ async def health_check():
 # Startup event
 @app.on_event("startup")
 async def startup_event():
-    logger.info("Starting AI Message Writer Assistant API v2.0.0")
+    logger.info("Starting CHOSEN API v2.0.0")
     # Initialize agent system
     # Load configurations
     # Verify data directories
@@ -411,7 +411,7 @@ async def startup_event():
 # Shutdown event
 @app.on_event("shutdown")
 async def shutdown_event():
-    logger.info("Shutting down AI Message Writer Assistant API")
+    logger.info("Shutting down CHOSEN API")
     # Cleanup resources
 ```
 
@@ -3142,7 +3142,7 @@ Quality Scorer
 **Version**: 2.0.0
 **Review Status**: Pending User Review
 
-This system design provides a comprehensive blueprint for implementing the AI Message Writer Assistant v2. All major components, data flows, and architectural decisions are documented with code examples and diagrams.
+This system design provides a comprehensive blueprint for implementing CHOSEN. All major components, data flows, and architectural decisions are documented with code examples and diagrams.
 
 The design prioritizes:
 - **Modularity**: Clean separation of concerns

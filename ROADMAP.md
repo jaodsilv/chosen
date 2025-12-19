@@ -34,14 +34,14 @@ This roadmap outlines the development path toward a minimal working system where
 
 | # | Issue | Description |
 |---|-------|-------------|
-| 66 | [feat(data): Implement FileHandler](../../issues/66) | File operations (read/write/lock) |
-| 67 | [feat(data): Implement YAMLHandler](../../issues/67) | YAML serialization with validation |
-| 68 | [feat(data): Implement RepositoryBase](../../issues/68) | Abstract CRUD interface |
-| 69 | [feat(data): Implement ConversationRepository](../../issues/69) | Conversation CRUD with indexing |
-| 70 | [feat(api): Implement Conversation REST endpoints](../../issues/70) | CRUD API for conversations |
-| 71 | [feat(agents): Implement ModelRouter](../../issues/71) | Claude API routing (Haiku/Sonnet/Opus) |
-| 72 | [feat(agents): Implement BaseAgent](../../issues/72) | Abstract agent base class |
-| 73 | [feat(agents): Implement AgentOrchestrator](../../issues/73) | Multi-agent execution manager |
+| 66 | feat(data): Implement FileHandler | File operations (read/write/lock) |
+| 67 | feat(data): Implement YAMLHandler | YAML serialization with validation |
+| 68 | feat(data): Implement RepositoryBase | Abstract CRUD interface |
+| 69 | feat(data): Implement ConversationRepository | Conversation CRUD with indexing |
+| 70 | feat(api): Implement Conversation REST endpoints | CRUD API for conversations |
+| 71 | feat(agents): Implement ModelRouter | Claude API routing (Haiku/Sonnet/Opus) |
+| 72 | feat(agents): Implement BaseAgent | Abstract agent base class |
+| 73 | feat(agents): Implement AgentOrchestrator | Multi-agent execution manager |
 
 **Dependency Order**:
 ```
@@ -60,11 +60,11 @@ FileHandler → YAMLHandler → RepositoryBase → ConversationRepository → Co
 
 | # | Issue | Description |
 |---|-------|-------------|
-| 74 | [feat(agents): Implement ResponseGeneratorAgent](../../issues/74) | Generate professional responses |
-| 75 | [feat(api): Implement Message REST endpoints](../../issues/75) | Message parsing and generation API |
-| 76 | [feat(services): Implement ConversationService](../../issues/76) | Business logic layer |
-| 77 | [feat(services): Implement MessageService](../../issues/77) | Message handling logic |
-| 51 | [Add GitHub Actions workflow](../../issues/51) | CI/CD automation |
+| 74 | feat(agents): Implement ResponseGeneratorAgent | Generate professional responses |
+| 75 | feat(api): Implement Message REST endpoints | Message parsing and generation API |
+| 76 | feat(services): Implement ConversationService | Business logic layer |
+| 77 | feat(services): Implement MessageService | Message handling logic |
+| 51 | Add GitHub Actions workflow | CI/CD automation |
 
 **After Milestone 2, the system can**:
 1. Store and retrieve conversations
@@ -82,14 +82,14 @@ FileHandler → YAMLHandler → RepositoryBase → ConversationRepository → Co
 
 | # | Issue | Description |
 |---|-------|-------------|
-| 78 | [feat(agents): Implement ContextAnalyzerAgent](../../issues/78) | Conversation analysis |
-| 79 | [feat(agents): Implement JobFitAnalyzerAgent](../../issues/79) | Job-candidate fit scoring |
-| 80 | [feat(api): Implement Analysis REST endpoints](../../issues/80) | Analysis API |
-| 81 | [feat(services): Implement AnalysisService](../../issues/81) | Analysis orchestration |
-| 82 | [feat(agents): Implement FollowUpTimingOptimizer](../../issues/82) | Follow-up timing |
-| 48 | [Integrate Participant model into Conversation](../../issues/48) | Model integration |
-| 50 | [Add length constraints to string fields](../../issues/50) | Input validation |
-| 54 | [Link Participant model to Conversation](../../issues/54) | Model relationships |
+| 78 | feat(agents): Implement ContextAnalyzerAgent | Conversation analysis |
+| 79 | feat(agents): Implement JobFitAnalyzerAgent | Job-candidate fit scoring |
+| 80 | feat(api): Implement Analysis REST endpoints | Analysis API |
+| 81 | feat(services): Implement AnalysisService | Analysis orchestration |
+| 82 | feat(agents): Implement FollowUpTimingOptimizer | Follow-up timing |
+| 48 | Integrate Participant model into Conversation | Model integration |
+| 50 | Add length constraints to string fields | Input validation |
+| 54 | Link Participant model to Conversation | Model relationships |
 
 ---
 
@@ -101,11 +101,11 @@ FileHandler → YAMLHandler → RepositoryBase → ConversationRepository → Co
 
 | # | Issue | Description |
 |---|-------|-------------|
-| 83 | [feat(agents): Implement CompanyResearcherAgent](../../issues/83) | Company research |
-| 84 | [feat(agents): Implement CompensationNegotiationAgent](../../issues/84) | Negotiation guidance |
-| 85 | [feat(api): Implement Settings REST endpoints](../../issues/85) | User settings API |
-| 86 | [feat(frontend): Initialize React frontend](../../issues/86) | Web UI |
-| 45-47, 52-53, 58-65 | Model refinements | Documentation and edge cases |
+| 83 | feat(agents): Implement CompanyResearcherAgent | Company research |
+| 84 | feat(agents): Implement CompensationNegotiationAgent | Negotiation guidance |
+| 85 | feat(api): Implement Settings REST endpoints | User settings API |
+| 86 | feat(frontend): Initialize React frontend | Web UI |
+| 46-47, 52-53, 58-65 | Model refinements | Documentation and edge cases |
 
 ---
 
@@ -150,8 +150,10 @@ To get a minimal working system:
 | P0 | 8 | Pending |
 | P1 | 5 | Pending |
 | P2 | 8 | Pending |
-| P3 | 17 | Pending |
-| **Total Open** | **38** | - |
+| P3 | 16 | Pending |
+| **Total Open** | **37** | - |
+
+*Note: Issue #45 (archive consistency validation) completed in PR #87.*
 
 ---
 
