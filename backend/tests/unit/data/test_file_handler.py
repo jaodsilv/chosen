@@ -773,14 +773,13 @@ class TestFileHandlerExceptionPaths:
         test_file = tmp_path / "permission_test.txt"
         test_file.write_text("content", encoding="utf-8")
 
-        # Mock the read_text method to raise PermissionError
-        with patch.object(Path, "read_text", side_effect=PermissionError("Access denied")):
-            with patch.object(Path, "exists", return_value=True):
-                # Act & Assert
-                with pytest.raises(FileAccessError) as exc_info:
-                    await file_handler.read_file(test_file)
+        # Mock aiofiles.open to raise PermissionError
+        with patch("aiofiles.open", side_effect=PermissionError("Access denied")):
+            # Act & Assert
+            with pytest.raises(FileAccessError) as exc_info:
+                await file_handler.read_file(test_file)
 
-                assert "Permission denied" in exc_info.value.message
+            assert "Permission denied" in exc_info.value.message
 
     async def test_read_file_os_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test read_file raises FileOperationError on OS error."""
@@ -788,14 +787,13 @@ class TestFileHandlerExceptionPaths:
         test_file = tmp_path / "os_error_test.txt"
         test_file.write_text("content", encoding="utf-8")
 
-        # Mock the read_text method to raise OSError
-        with patch.object(Path, "read_text", side_effect=OSError("I/O error")):
-            with patch.object(Path, "exists", return_value=True):
-                # Act & Assert
-                with pytest.raises(FileOperationError) as exc_info:
-                    await file_handler.read_file(test_file)
+        # Mock aiofiles.open to raise OSError
+        with patch("aiofiles.open", side_effect=OSError("I/O error")):
+            # Act & Assert
+            with pytest.raises(FileOperationError) as exc_info:
+                await file_handler.read_file(test_file)
 
-                assert "Error reading file" in exc_info.value.message
+            assert "Error reading file" in exc_info.value.message
 
     async def test_read_bytes_permission_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test read_bytes raises FileAccessError on permission error."""
@@ -803,10 +801,9 @@ class TestFileHandlerExceptionPaths:
         test_file = tmp_path / "permission_bytes.bin"
         test_file.write_bytes(b"content")
 
-        with patch.object(Path, "read_bytes", side_effect=PermissionError("Access denied")):
-            with patch.object(Path, "exists", return_value=True):
-                with pytest.raises(FileAccessError):
-                    await file_handler.read_bytes(test_file)
+        with patch("aiofiles.open", side_effect=PermissionError("Access denied")):
+            with pytest.raises(FileAccessError):
+                await file_handler.read_bytes(test_file)
 
     async def test_read_bytes_os_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test read_bytes raises FileOperationError on OS error."""
@@ -814,17 +811,16 @@ class TestFileHandlerExceptionPaths:
         test_file = tmp_path / "os_error_bytes.bin"
         test_file.write_bytes(b"content")
 
-        with patch.object(Path, "read_bytes", side_effect=OSError("I/O error")):
-            with patch.object(Path, "exists", return_value=True):
-                with pytest.raises(FileOperationError):
-                    await file_handler.read_bytes(test_file)
+        with patch("aiofiles.open", side_effect=OSError("I/O error")):
+            with pytest.raises(FileOperationError):
+                await file_handler.read_bytes(test_file)
 
     async def test_write_file_permission_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test write_file raises FileAccessError on permission error."""
         # Arrange
         test_file = tmp_path / "permission_write.txt"
 
-        with patch.object(Path, "write_text", side_effect=PermissionError("Access denied")):
+        with patch("aiofiles.open", side_effect=PermissionError("Access denied")):
             with pytest.raises(FileAccessError):
                 await file_handler.write_file(test_file, "content")
 
@@ -833,7 +829,7 @@ class TestFileHandlerExceptionPaths:
         # Arrange
         test_file = tmp_path / "os_error_write.txt"
 
-        with patch.object(Path, "write_text", side_effect=OSError("I/O error")):
+        with patch("aiofiles.open", side_effect=OSError("I/O error")):
             with pytest.raises(FileOperationError):
                 await file_handler.write_file(test_file, "content")
 
@@ -842,7 +838,7 @@ class TestFileHandlerExceptionPaths:
         # Arrange
         test_file = tmp_path / "permission_write_bytes.bin"
 
-        with patch.object(Path, "write_bytes", side_effect=PermissionError("Access denied")):
+        with patch("aiofiles.open", side_effect=PermissionError("Access denied")):
             with pytest.raises(FileAccessError):
                 await file_handler.write_bytes(test_file, b"content")
 
@@ -851,7 +847,7 @@ class TestFileHandlerExceptionPaths:
         # Arrange
         test_file = tmp_path / "os_error_write_bytes.bin"
 
-        with patch.object(Path, "write_bytes", side_effect=OSError("I/O error")):
+        with patch("aiofiles.open", side_effect=OSError("I/O error")):
             with pytest.raises(FileOperationError):
                 await file_handler.write_bytes(test_file, b"content")
 
@@ -963,3 +959,211 @@ class TestFileHandlerExceptionPaths:
         with patch.object(Path, "stat", side_effect=OSError("I/O error")):
             with pytest.raises(FileOperationError):
                 await file_handler.get_file_info(test_file)
+
+
+# =============================================================================
+# FileInfo Validation Tests
+# =============================================================================
+
+
+@pytest.mark.unit
+class TestFileInfoValidation:
+    """Test suite for FileInfo dataclass validation."""
+
+    def test_fileinfo_cannot_be_both_file_and_directory(self) -> None:
+        """Test that FileInfo raises ValueError when both is_file and is_directory are True."""
+        from datetime import datetime, timezone
+
+        with pytest.raises(ValueError) as exc_info:
+            FileInfo(
+                path=Path("/test"),
+                size=100,
+                created_at=datetime.now(timezone.utc),
+                modified_at=datetime.now(timezone.utc),
+                is_file=True,
+                is_directory=True,
+            )
+
+        assert "cannot be both a file and a directory" in str(exc_info.value)
+
+    def test_fileinfo_can_be_file_only(self) -> None:
+        """Test that FileInfo accepts is_file=True, is_directory=False."""
+        from datetime import datetime, timezone
+
+        info = FileInfo(
+            path=Path("/test.txt"),
+            size=100,
+            created_at=datetime.now(timezone.utc),
+            modified_at=datetime.now(timezone.utc),
+            is_file=True,
+            is_directory=False,
+        )
+        assert info.is_file is True
+        assert info.is_directory is False
+
+    def test_fileinfo_can_be_directory_only(self) -> None:
+        """Test that FileInfo accepts is_file=False, is_directory=True."""
+        from datetime import datetime, timezone
+
+        info = FileInfo(
+            path=Path("/test_dir"),
+            size=0,
+            created_at=datetime.now(timezone.utc),
+            modified_at=datetime.now(timezone.utc),
+            is_file=False,
+            is_directory=True,
+        )
+        assert info.is_file is False
+        assert info.is_directory is True
+
+
+# =============================================================================
+# Copy and Move File Tests
+# =============================================================================
+
+
+@pytest.mark.unit
+class TestFileHandlerCopyMoveOperations:
+    """Test suite for FileHandler copy and move operations."""
+
+    async def test_copy_file_success(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test successful file copy."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "destination.txt"
+        content = "Content to copy"
+        source.write_text(content, encoding="utf-8")
+
+        # Act
+        await file_handler.copy_file(source, destination)
+
+        # Assert
+        assert destination.exists()
+        assert destination.read_text(encoding="utf-8") == content
+        assert source.exists()  # Source should still exist
+
+    async def test_copy_file_creates_parent_directories(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test that copy_file creates parent directories."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "nested" / "dir" / "destination.txt"
+        content = "Content to copy"
+        source.write_text(content, encoding="utf-8")
+
+        # Act
+        await file_handler.copy_file(source, destination)
+
+        # Assert
+        assert destination.exists()
+        assert destination.read_text(encoding="utf-8") == content
+
+    async def test_copy_file_source_not_found(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test copy_file raises error when source doesn't exist."""
+        # Arrange
+        source = tmp_path / "nonexistent.txt"
+        destination = tmp_path / "destination.txt"
+
+        # Act & Assert
+        with pytest.raises(AppFileNotFoundError) as exc_info:
+            await file_handler.copy_file(source, destination)
+
+        assert "Source file not found" in exc_info.value.message
+
+    async def test_move_file_success(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test successful file move."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "destination.txt"
+        content = "Content to move"
+        source.write_text(content, encoding="utf-8")
+
+        # Act
+        await file_handler.move_file(source, destination)
+
+        # Assert
+        assert destination.exists()
+        assert destination.read_text(encoding="utf-8") == content
+        assert not source.exists()  # Source should be gone
+
+    async def test_move_file_creates_parent_directories(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test that move_file creates parent directories."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "nested" / "dir" / "destination.txt"
+        content = "Content to move"
+        source.write_text(content, encoding="utf-8")
+
+        # Act
+        await file_handler.move_file(source, destination)
+
+        # Assert
+        assert destination.exists()
+        assert destination.read_text(encoding="utf-8") == content
+        assert not source.exists()
+
+    async def test_move_file_source_not_found(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test move_file raises error when source doesn't exist."""
+        # Arrange
+        source = tmp_path / "nonexistent.txt"
+        destination = tmp_path / "destination.txt"
+
+        # Act & Assert
+        with pytest.raises(AppFileNotFoundError) as exc_info:
+            await file_handler.move_file(source, destination)
+
+        assert "Source file not found" in exc_info.value.message
+
+
+# =============================================================================
+# Glob Pattern Validation Tests
+# =============================================================================
+
+
+@pytest.mark.unit
+class TestGlobPatternValidation:
+    """Test suite for glob pattern validation."""
+
+    async def test_glob_pattern_with_parent_traversal_rejected(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test that glob patterns with '..' are rejected."""
+        # Arrange
+        test_dir = tmp_path / "test_dir"
+        test_dir.mkdir()
+
+        # Act & Assert
+        with pytest.raises(ValueError) as exc_info:
+            await file_handler.list_directory(test_dir, pattern="../*")
+
+        assert "cannot contain '..'" in str(exc_info.value)
+
+    async def test_glob_pattern_with_embedded_parent_traversal_rejected(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test that glob patterns with embedded '..' are rejected."""
+        # Arrange
+        test_dir = tmp_path / "test_dir"
+        test_dir.mkdir()
+
+        # Act & Assert
+        with pytest.raises(ValueError) as exc_info:
+            await file_handler.list_directory(test_dir, pattern="subdir/../*.txt")
+
+        assert "cannot contain '..'" in str(exc_info.value)
+
+    async def test_valid_glob_patterns_accepted(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test that valid glob patterns work correctly."""
+        # Arrange
+        test_dir = tmp_path / "test_dir"
+        test_dir.mkdir()
+        (test_dir / "file1.txt").write_text("content", encoding="utf-8")
+        (test_dir / "file2.txt").write_text("content", encoding="utf-8")
+        (test_dir / "data.json").write_text("{}", encoding="utf-8")
+
+        # Act & Assert - Various valid patterns
+        txt_files = await file_handler.list_directory(test_dir, pattern="*.txt")
+        assert len(txt_files) == 2
+
+        all_files = await file_handler.list_directory(test_dir, pattern="*")
+        assert len(all_files) == 3
+
+        file1_only = await file_handler.list_directory(test_dir, pattern="file1.*")
+        assert len(file1_only) == 1

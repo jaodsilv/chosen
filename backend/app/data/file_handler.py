@@ -34,6 +34,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import AsyncIterator, List
 
+import aiofiles
+import aiofiles.os
+
 from app.core.exceptions import (
     AppFileNotFoundError,
     DirectoryNotEmptyError,
@@ -124,6 +127,8 @@ class FileHandler:
     async def read_file(self, path: Path) -> str:
         """Read text content from a file.
 
+        Uses aiofiles for true async I/O.
+
         Args:
             path: Path to the file to read.
 
@@ -135,18 +140,16 @@ class FileHandler:
             FileAccessError: If there's a permission error.
             FileOperationError: For other file operation errors.
         """
-        return await asyncio.to_thread(self._read_file_sync, path)
-
-    def _read_file_sync(self, path: Path) -> str:
-        """Synchronous implementation of read_file."""
-        if not path.exists():
+        if not await aiofiles.os.path.exists(path):
             raise AppFileNotFoundError(
                 message=f"File not found: {path}",
                 details={"path": str(path)},
             )
 
         try:
-            return path.read_text(encoding=self._encoding)
+            async with aiofiles.open(path, "r", encoding=self._encoding) as f:
+                content: str = await f.read()
+                return content
         except PermissionError as e:
             raise FileAccessError(
                 message=f"Permission denied reading file: {path}",
@@ -161,6 +164,8 @@ class FileHandler:
     async def read_bytes(self, path: Path) -> bytes:
         """Read binary content from a file.
 
+        Uses aiofiles for true async I/O.
+
         Args:
             path: Path to the file to read.
 
@@ -172,18 +177,16 @@ class FileHandler:
             FileAccessError: If there's a permission error.
             FileOperationError: For other file operation errors.
         """
-        return await asyncio.to_thread(self._read_bytes_sync, path)
-
-    def _read_bytes_sync(self, path: Path) -> bytes:
-        """Synchronous implementation of read_bytes."""
-        if not path.exists():
+        if not await aiofiles.os.path.exists(path):
             raise AppFileNotFoundError(
                 message=f"File not found: {path}",
                 details={"path": str(path)},
             )
 
         try:
-            return path.read_bytes()
+            async with aiofiles.open(path, "rb") as f:
+                content: bytes = await f.read()
+                return content
         except PermissionError as e:
             raise FileAccessError(
                 message=f"Permission denied reading file: {path}",
@@ -203,6 +206,7 @@ class FileHandler:
         """Write text content to a file.
 
         Creates parent directories if they don't exist.
+        Uses aiofiles for true async I/O.
 
         Args:
             path: Path to the file to write.
@@ -212,14 +216,11 @@ class FileHandler:
             FileAccessError: If there's a permission error.
             FileOperationError: For other file operation errors.
         """
-        await asyncio.to_thread(self._write_file_sync, path, content)
-
-    def _write_file_sync(self, path: Path, content: str) -> None:
-        """Synchronous implementation of write_file."""
         try:
-            # Create parent directories if needed
+            # Create parent directories if needed (sync, but quick)
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content, encoding=self._encoding)
+            async with aiofiles.open(path, "w", encoding=self._encoding) as f:
+                await f.write(content)
         except PermissionError as e:
             raise FileAccessError(
                 message=f"Permission denied writing file: {path}",
@@ -235,6 +236,7 @@ class FileHandler:
         """Write binary content to a file.
 
         Creates parent directories if they don't exist.
+        Uses aiofiles for true async I/O.
 
         Args:
             path: Path to the file to write.
@@ -244,14 +246,11 @@ class FileHandler:
             FileAccessError: If there's a permission error.
             FileOperationError: For other file operation errors.
         """
-        await asyncio.to_thread(self._write_bytes_sync, path, content)
-
-    def _write_bytes_sync(self, path: Path, content: bytes) -> None:
-        """Synchronous implementation of write_bytes."""
         try:
-            # Create parent directories if needed
+            # Create parent directories if needed (sync, but quick)
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(content)
+            async with aiofiles.open(path, "wb") as f:
+                await f.write(content)
         except PermissionError as e:
             raise FileAccessError(
                 message=f"Permission denied writing file: {path}",
@@ -303,6 +302,82 @@ class FileHandler:
             raise FileOperationError(
                 message=f"Error deleting file: {path}",
                 details={"path": str(path), "error": str(e)},
+            ) from e
+
+    # =========================================================================
+    # File Copy and Move Operations
+    # =========================================================================
+
+    async def copy_file(self, source: Path, destination: Path) -> None:
+        """Copy a file from source to destination.
+
+        Creates parent directories of destination if they don't exist.
+
+        Args:
+            source: Path to the source file.
+            destination: Path to the destination file.
+
+        Raises:
+            AppFileNotFoundError: If the source file does not exist.
+            FileAccessError: If there's a permission error.
+            FileOperationError: For other file operation errors.
+        """
+        if not await aiofiles.os.path.exists(source):
+            raise AppFileNotFoundError(
+                message=f"Source file not found: {source}",
+                details={"source": str(source), "destination": str(destination)},
+            )
+
+        try:
+            # Create parent directories if needed
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            # Use shutil.copy2 to preserve metadata
+            await asyncio.to_thread(shutil.copy2, source, destination)
+        except PermissionError as e:
+            raise FileAccessError(
+                message=f"Permission denied copying file: {source} -> {destination}",
+                details={"source": str(source), "destination": str(destination), "error": str(e)},
+            ) from e
+        except OSError as e:
+            raise FileOperationError(
+                message=f"Error copying file: {source} -> {destination}",
+                details={"source": str(source), "destination": str(destination), "error": str(e)},
+            ) from e
+
+    async def move_file(self, source: Path, destination: Path) -> None:
+        """Move a file from source to destination.
+
+        Creates parent directories of destination if they don't exist.
+
+        Args:
+            source: Path to the source file.
+            destination: Path to the destination file.
+
+        Raises:
+            AppFileNotFoundError: If the source file does not exist.
+            FileAccessError: If there's a permission error.
+            FileOperationError: For other file operation errors.
+        """
+        if not await aiofiles.os.path.exists(source):
+            raise AppFileNotFoundError(
+                message=f"Source file not found: {source}",
+                details={"source": str(source), "destination": str(destination)},
+            )
+
+        try:
+            # Create parent directories if needed
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            # Use shutil.move for cross-filesystem moves
+            await asyncio.to_thread(shutil.move, str(source), str(destination))
+        except PermissionError as e:
+            raise FileAccessError(
+                message=f"Permission denied moving file: {source} -> {destination}",
+                details={"source": str(source), "destination": str(destination), "error": str(e)},
+            ) from e
+        except OSError as e:
+            raise FileOperationError(
+                message=f"Error moving file: {source} -> {destination}",
+                details={"source": str(source), "destination": str(destination), "error": str(e)},
             ) from e
 
     # =========================================================================
@@ -375,8 +450,25 @@ class FileHandler:
             DirectoryNotFoundError: If the directory does not exist.
             FileAccessError: If there's a permission error.
             FileOperationError: For other file operation errors.
+            ValueError: If the pattern contains unsafe path traversal sequences.
         """
+        self._validate_glob_pattern(pattern)
         return await asyncio.to_thread(self._list_directory_sync, path, pattern)
+
+    def _validate_glob_pattern(self, pattern: str) -> None:
+        """Validate glob pattern is safe and well-formed.
+
+        Args:
+            pattern: The glob pattern to validate.
+
+        Raises:
+            ValueError: If the pattern contains unsafe sequences like '..'.
+        """
+        if not pattern:
+            return
+        # Check for directory traversal attempts
+        if ".." in pattern:
+            raise ValueError("Glob pattern cannot contain '..' for security reasons")
 
     def _list_directory_sync(self, path: Path, pattern: str) -> List[Path]:
         """Synchronous implementation of list_directory."""

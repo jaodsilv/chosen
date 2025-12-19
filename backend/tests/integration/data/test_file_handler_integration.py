@@ -14,8 +14,8 @@ from typing import List
 
 import pytest
 
+from app.core.exceptions import FileLockError
 from app.data.file_handler import FileHandler, FileLock
-
 
 # =============================================================================
 # Fixtures
@@ -392,3 +392,66 @@ class TestFileHandlerEdgeCases:
 
         # Cleanup
         await file_handler.delete_directory(test_dir, recursive=True)
+
+
+# =============================================================================
+# Cross-Instance Locking Tests
+# =============================================================================
+
+
+@pytest.mark.integration
+class TestFileHandlerCrossInstanceLocking:
+    """Integration tests for locking behavior across FileHandler instances."""
+
+    async def test_concurrent_locking_across_instances(self, tmp_path: Path) -> None:
+        """Test that locks work across separate FileHandler instances."""
+        # Arrange - Create two independent FileHandler instances
+        handler1 = FileHandler()
+        handler2 = FileHandler()
+        test_file = tmp_path / "shared.txt"
+        test_file.write_text("content", encoding="utf-8")
+
+        # Act - Acquire lock with first handler
+        lock1 = await handler1.acquire_lock(test_file)
+
+        # Assert - Second handler cannot acquire lock
+        with pytest.raises(FileLockError) as exc_info:
+            await handler2.acquire_lock(test_file, timeout=0.1)
+
+        assert "Timeout acquiring lock" in str(exc_info.value.message)
+        assert exc_info.value.details["lock_file_exists"] is True
+
+        # Cleanup - Release lock
+        await handler1.release_lock(lock1)
+
+        # After release, second handler should be able to acquire
+        lock2 = await handler2.acquire_lock(test_file, timeout=0.1)
+        assert isinstance(lock2, FileLock)
+        await handler2.release_lock(lock2)
+
+    async def test_orphaned_lock_file_handling(self, tmp_path: Path) -> None:
+        """Test behavior when encountering orphaned lock files.
+
+        This test verifies that the current implementation correctly times out
+        when an orphaned lock file exists. Stale lock detection (via PID tracking
+        or timestamps) is not yet implemented.
+        """
+        # Arrange
+        file_handler = FileHandler()
+        test_file = tmp_path / "orphaned.txt"
+        test_file.write_text("content", encoding="utf-8")
+
+        # Manually create orphaned lock file (simulates crashed process)
+        lock_file = tmp_path / ".orphaned.txt.lock"
+        lock_file.write_text("orphaned", encoding="utf-8")
+
+        # Act & Assert - Should timeout since lock file exists
+        # (until stale detection is implemented)
+        with pytest.raises(FileLockError) as exc_info:
+            await file_handler.acquire_lock(test_file, timeout=0.1)
+
+        assert "Timeout acquiring lock" in str(exc_info.value.message)
+        assert exc_info.value.details["lock_file_exists"] is True
+
+        # Cleanup - Remove orphaned lock file
+        lock_file.unlink()
