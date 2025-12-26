@@ -1266,6 +1266,58 @@ class TestCopyMovePermissionErrors:
 
             assert "Error moving file" in exc_info.value.message
 
+    async def test_copy_file_mkdir_permission_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test copy_file raises FileAccessError when mkdir fails with permission error."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "nested" / "destination.txt"
+        source.write_text("content", encoding="utf-8")
+
+        with patch.object(Path, "mkdir", side_effect=PermissionError("Access denied")):
+            with pytest.raises(FileAccessError) as exc_info:
+                await file_handler.copy_file(source, destination)
+
+            assert "Permission denied creating destination directory" in exc_info.value.message
+
+    async def test_copy_file_mkdir_os_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test copy_file raises FileOperationError when mkdir fails with OS error."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "nested" / "destination.txt"
+        source.write_text("content", encoding="utf-8")
+
+        with patch.object(Path, "mkdir", side_effect=OSError("Disk full")):
+            with pytest.raises(FileOperationError) as exc_info:
+                await file_handler.copy_file(source, destination)
+
+            assert "Error creating destination directory" in exc_info.value.message
+
+    async def test_move_file_mkdir_permission_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test move_file raises FileAccessError when mkdir fails with permission error."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "nested" / "destination.txt"
+        source.write_text("content", encoding="utf-8")
+
+        with patch.object(Path, "mkdir", side_effect=PermissionError("Access denied")):
+            with pytest.raises(FileAccessError) as exc_info:
+                await file_handler.move_file(source, destination)
+
+            assert "Permission denied creating destination directory" in exc_info.value.message
+
+    async def test_move_file_mkdir_os_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
+        """Test move_file raises FileOperationError when mkdir fails with OS error."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "nested" / "destination.txt"
+        source.write_text("content", encoding="utf-8")
+
+        with patch.object(Path, "mkdir", side_effect=OSError("Disk full")):
+            with pytest.raises(FileOperationError) as exc_info:
+                await file_handler.move_file(source, destination)
+
+            assert "Error creating destination directory" in exc_info.value.message
+
 
 # =============================================================================
 # Recursive Delete Permission Error Tests

@@ -264,6 +264,11 @@ class FileHandler:
         Creates parent directories if they don't exist.
         Uses aiofiles for true async I/O.
 
+        Note:
+            If the file already exists, it will be completely overwritten.
+            Use file locking (via `locked()` context manager) if you need
+            to prevent concurrent access during read-modify-write operations.
+
         Args:
             path: Path to the file to write.
             content: The binary content to write.
@@ -340,6 +345,10 @@ class FileHandler:
         Creates parent directories of destination if they don't exist.
         Uses try/except pattern to avoid TOCTOU race condition.
 
+        Note:
+            If the destination file already exists, it will be completely overwritten.
+            Use file locking if you need to prevent concurrent access.
+
         Args:
             source: Path to the source file.
             destination: Path to the destination file.
@@ -388,6 +397,10 @@ class FileHandler:
 
         Creates parent directories of destination if they don't exist.
         Uses try/except pattern to avoid TOCTOU race condition.
+
+        Note:
+            If the destination file already exists, it will be completely overwritten.
+            Use file locking if you need to prevent concurrent access.
 
         Args:
             source: Path to the source file.
