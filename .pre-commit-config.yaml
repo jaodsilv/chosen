@@ -40,5 +40,6 @@ repos:
         files: ^backend/
         additional_dependencies:
           - types-PyYAML
+          - types-aiofiles
           - pydantic
           - fastapi

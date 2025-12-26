@@ -14,6 +14,7 @@ anthropic>=0.18.0
 
 # Data Handling
 pyyaml>=6.0.1
+aiofiles>=23.0.0
 
 # HTTP Client
 httpx>=0.26.0
