@@ -1168,9 +1168,7 @@ class TestGlobPatternValidation:
         file1_only = await file_handler.list_directory(test_dir, pattern="file1.*")
         assert len(file1_only) == 1
 
-    async def test_glob_pattern_with_absolute_path_rejected(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_glob_pattern_with_absolute_path_rejected(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test that glob patterns starting with '/' are rejected."""
         # Arrange
         test_dir = tmp_path / "test_dir"
@@ -1182,9 +1180,7 @@ class TestGlobPatternValidation:
 
         assert "absolute path" in str(exc_info.value)
 
-    async def test_glob_pattern_with_drive_letter_rejected(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_glob_pattern_with_drive_letter_rejected(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test that glob patterns with Windows drive letters are rejected."""
         # Arrange
         test_dir = tmp_path / "test_dir"
@@ -1196,9 +1192,7 @@ class TestGlobPatternValidation:
 
         assert "drive letters" in str(exc_info.value)
 
-    async def test_empty_glob_pattern_raises_error(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_empty_glob_pattern_raises_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test that empty glob pattern raises an error from pathlib.glob."""
         # Arrange
         test_dir = tmp_path / "test_dir"
@@ -1220,9 +1214,7 @@ class TestGlobPatternValidation:
 class TestCopyMovePermissionErrors:
     """Test suite for copy and move permission error handling."""
 
-    async def test_copy_file_permission_error(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_copy_file_permission_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test copy_file raises FileAccessError on permission error."""
         # Arrange
         source = tmp_path / "source.txt"
@@ -1235,9 +1227,7 @@ class TestCopyMovePermissionErrors:
 
             assert "Permission denied" in exc_info.value.message
 
-    async def test_copy_file_os_error(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_copy_file_os_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test copy_file raises FileOperationError on OS error."""
         # Arrange
         source = tmp_path / "source.txt"
@@ -1250,9 +1240,7 @@ class TestCopyMovePermissionErrors:
 
             assert "Error copying file" in exc_info.value.message
 
-    async def test_move_file_permission_error(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_move_file_permission_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test move_file raises FileAccessError on permission error."""
         # Arrange
         source = tmp_path / "source.txt"
@@ -1265,9 +1253,7 @@ class TestCopyMovePermissionErrors:
 
             assert "Permission denied" in exc_info.value.message
 
-    async def test_move_file_os_error(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_move_file_os_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test move_file raises FileOperationError on OS error."""
         # Arrange
         source = tmp_path / "source.txt"
@@ -1290,9 +1276,7 @@ class TestCopyMovePermissionErrors:
 class TestRecursiveDeletePermissionErrors:
     """Test suite for recursive delete permission error handling."""
 
-    async def test_delete_directory_recursive_permission_error(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_delete_directory_recursive_permission_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test delete_directory with recursive=True raises FileAccessError on permission error."""
         # Arrange
         test_dir = tmp_path / "test_dir"
@@ -1305,9 +1289,7 @@ class TestRecursiveDeletePermissionErrors:
 
             assert "Permission denied" in exc_info.value.message
 
-    async def test_delete_directory_recursive_os_error(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_delete_directory_recursive_os_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test delete_directory with recursive=True raises FileOperationError on OS error."""
         # Arrange
         test_dir = tmp_path / "test_dir"
@@ -1330,9 +1312,7 @@ class TestRecursiveDeletePermissionErrors:
 class TestUnicodeDecodeError:
     """Test suite for UnicodeDecodeError handling."""
 
-    async def test_read_file_unicode_decode_error(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_read_file_unicode_decode_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test read_file raises FileOperationError for non-UTF-8 files."""
         # Arrange - Create a file with invalid UTF-8 bytes
         test_file = tmp_path / "invalid_utf8.txt"
@@ -1416,30 +1396,28 @@ class TestFileLockComputedProperty:
 class TestLockAcquisitionErrors:
     """Test suite for lock acquisition error handling."""
 
-    async def test_acquire_lock_permission_error(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_acquire_lock_permission_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test acquire_lock raises FileAccessError on permission error."""
         # Arrange
         test_file = tmp_path / "lockable.txt"
         test_file.write_text("content", encoding="utf-8")
 
         import os
+
         with patch.object(os, "open", side_effect=PermissionError("Access denied")):
             with pytest.raises(FileAccessError) as exc_info:
                 await file_handler.acquire_lock(test_file)
 
             assert "Permission denied" in exc_info.value.message
 
-    async def test_acquire_lock_os_error(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_acquire_lock_os_error(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test acquire_lock raises FileOperationError on unexpected OS error."""
         # Arrange
         test_file = tmp_path / "lockable.txt"
         test_file.write_text("content", encoding="utf-8")
 
         import os
+
         with patch.object(os, "open", side_effect=OSError("Disk full")):
             with pytest.raises(FileOperationError) as exc_info:
                 await file_handler.acquire_lock(test_file)
@@ -1456,9 +1434,7 @@ class TestLockAcquisitionErrors:
 class TestNegativeTimeout:
     """Test suite for negative timeout handling."""
 
-    async def test_lock_with_negative_timeout(
-        self, tmp_path: Path, file_handler: FileHandler
-    ) -> None:
+    async def test_lock_with_negative_timeout(self, tmp_path: Path, file_handler: FileHandler) -> None:
         """Test lock acquisition with negative timeout fails immediately if locked."""
         # Arrange
         test_file = tmp_path / "negative_timeout.txt"
