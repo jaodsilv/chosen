@@ -63,7 +63,8 @@ class FileInfo:
         is_directory: Whether this is a directory.
 
     Raises:
-        ValueError: If both is_file and is_directory are True.
+        ValueError: If both is_file and is_directory are True, or if both are False
+            (which would indicate an invalid filesystem entry like a broken symlink).
     """
 
     path: Path
@@ -74,9 +75,14 @@ class FileInfo:
     is_directory: bool
 
     def __post_init__(self) -> None:
-        """Validate that is_file and is_directory are mutually exclusive."""
+        """Validate that is_file and is_directory represent a valid filesystem state."""
         if self.is_file and self.is_directory:
             raise ValueError("FileInfo cannot be both a file and a directory")
+        if not self.is_file and not self.is_directory:
+            raise ValueError(
+                "FileInfo must be either a file or a directory "
+                "(neither is set - this may indicate a broken symlink or special file)"
+            )
 
 
 @dataclass(frozen=True)
@@ -86,12 +92,20 @@ class FileLock:
     Attributes:
         path: The path to the locked file.
         acquired_at: When the lock was acquired.
-        lock_file: Path to the lock file.
+        lock_file: Path to the lock file (computed from path).
     """
 
     path: Path
     acquired_at: datetime
-    lock_file: Path
+
+    @property
+    def lock_file(self) -> Path:
+        """Return the path to the lock file.
+
+        The lock file is stored in the same directory as the target file,
+        with a '.' prefix and '.lock' suffix.
+        """
+        return self.path.parent / f".{self.path.name}.lock"
 
 
 class FileHandler:
@@ -104,7 +118,8 @@ class FileHandler:
         - Getting file information and metadata
 
     All file operations are performed with UTF-8 encoding by default.
-    Async operations use asyncio.to_thread for non-blocking I/O.
+    Async operations use aiofiles for true async I/O on file read/write,
+    and asyncio.to_thread for other filesystem operations (stat, mkdir, etc.).
 
     Example usage::
 
@@ -127,7 +142,8 @@ class FileHandler:
     async def read_file(self, path: Path) -> str:
         """Read text content from a file.
 
-        Uses aiofiles for true async I/O.
+        Uses aiofiles for true async I/O. Uses try/except pattern instead of
+        exists() check to avoid TOCTOU race condition.
 
         Args:
             path: Path to the file to read.
@@ -138,22 +154,27 @@ class FileHandler:
         Raises:
             AppFileNotFoundError: If the file does not exist.
             FileAccessError: If there's a permission error.
-            FileOperationError: For other file operation errors.
+            FileOperationError: For other file operation errors (including
+                encoding errors for non-UTF-8 files).
         """
-        if not await aiofiles.os.path.exists(path):
-            raise AppFileNotFoundError(
-                message=f"File not found: {path}",
-                details={"path": str(path)},
-            )
-
         try:
             async with aiofiles.open(path, "r", encoding=self._encoding) as f:
                 content: str = await f.read()
                 return content
+        except FileNotFoundError:
+            raise AppFileNotFoundError(
+                message=f"File not found: {path}",
+                details={"path": str(path)},
+            )
         except PermissionError as e:
             raise FileAccessError(
                 message=f"Permission denied reading file: {path}",
                 details={"path": str(path), "error": str(e)},
+            ) from e
+        except UnicodeDecodeError as e:
+            raise FileOperationError(
+                message=f"Error reading file: {path} - file is not valid UTF-8 encoded",
+                details={"path": str(path), "error": str(e), "encoding": self._encoding},
             ) from e
         except OSError as e:
             raise FileOperationError(
@@ -164,7 +185,8 @@ class FileHandler:
     async def read_bytes(self, path: Path) -> bytes:
         """Read binary content from a file.
 
-        Uses aiofiles for true async I/O.
+        Uses aiofiles for true async I/O. Uses try/except pattern instead of
+        exists() check to avoid TOCTOU race condition.
 
         Args:
             path: Path to the file to read.
@@ -177,16 +199,15 @@ class FileHandler:
             FileAccessError: If there's a permission error.
             FileOperationError: For other file operation errors.
         """
-        if not await aiofiles.os.path.exists(path):
-            raise AppFileNotFoundError(
-                message=f"File not found: {path}",
-                details={"path": str(path)},
-            )
-
         try:
             async with aiofiles.open(path, "rb") as f:
                 content: bytes = await f.read()
                 return content
+        except FileNotFoundError:
+            raise AppFileNotFoundError(
+                message=f"File not found: {path}",
+                details={"path": str(path)},
+            )
         except PermissionError as e:
             raise FileAccessError(
                 message=f"Permission denied reading file: {path}",
@@ -207,6 +228,11 @@ class FileHandler:
 
         Creates parent directories if they don't exist.
         Uses aiofiles for true async I/O.
+
+        Note:
+            If the file already exists, it will be completely overwritten.
+            Use file locking (via `locked()` context manager) if you need
+            to prevent concurrent access during read-modify-write operations.
 
         Args:
             path: Path to the file to write.
@@ -312,6 +338,7 @@ class FileHandler:
         """Copy a file from source to destination.
 
         Creates parent directories of destination if they don't exist.
+        Uses try/except pattern to avoid TOCTOU race condition.
 
         Args:
             source: Path to the source file.
@@ -320,19 +347,31 @@ class FileHandler:
         Raises:
             AppFileNotFoundError: If the source file does not exist.
             FileAccessError: If there's a permission error.
-            FileOperationError: For other file operation errors.
+            FileOperationError: For other file operation errors, including
+                errors creating parent directories.
         """
-        if not await aiofiles.os.path.exists(source):
+        try:
+            # Create parent directories if needed
+            destination.parent.mkdir(parents=True, exist_ok=True)
+        except PermissionError as e:
+            raise FileAccessError(
+                message=f"Permission denied creating destination directory: {destination.parent}",
+                details={"source": str(source), "destination": str(destination), "error": str(e)},
+            ) from e
+        except OSError as e:
+            raise FileOperationError(
+                message=f"Error creating destination directory: {destination.parent}",
+                details={"source": str(source), "destination": str(destination), "error": str(e)},
+            ) from e
+
+        try:
+            # Use shutil.copy2 to preserve metadata
+            await asyncio.to_thread(shutil.copy2, source, destination)
+        except FileNotFoundError:
             raise AppFileNotFoundError(
                 message=f"Source file not found: {source}",
                 details={"source": str(source), "destination": str(destination)},
             )
-
-        try:
-            # Create parent directories if needed
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            # Use shutil.copy2 to preserve metadata
-            await asyncio.to_thread(shutil.copy2, source, destination)
         except PermissionError as e:
             raise FileAccessError(
                 message=f"Permission denied copying file: {source} -> {destination}",
@@ -348,6 +387,7 @@ class FileHandler:
         """Move a file from source to destination.
 
         Creates parent directories of destination if they don't exist.
+        Uses try/except pattern to avoid TOCTOU race condition.
 
         Args:
             source: Path to the source file.
@@ -356,19 +396,31 @@ class FileHandler:
         Raises:
             AppFileNotFoundError: If the source file does not exist.
             FileAccessError: If there's a permission error.
-            FileOperationError: For other file operation errors.
+            FileOperationError: For other file operation errors, including
+                errors creating parent directories.
         """
-        if not await aiofiles.os.path.exists(source):
+        try:
+            # Create parent directories if needed
+            destination.parent.mkdir(parents=True, exist_ok=True)
+        except PermissionError as e:
+            raise FileAccessError(
+                message=f"Permission denied creating destination directory: {destination.parent}",
+                details={"source": str(source), "destination": str(destination), "error": str(e)},
+            ) from e
+        except OSError as e:
+            raise FileOperationError(
+                message=f"Error creating destination directory: {destination.parent}",
+                details={"source": str(source), "destination": str(destination), "error": str(e)},
+            ) from e
+
+        try:
+            # Use shutil.move for cross-filesystem moves
+            await asyncio.to_thread(shutil.move, str(source), str(destination))
+        except FileNotFoundError:
             raise AppFileNotFoundError(
                 message=f"Source file not found: {source}",
                 details={"source": str(source), "destination": str(destination)},
             )
-
-        try:
-            # Create parent directories if needed
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            # Use shutil.move for cross-filesystem moves
-            await asyncio.to_thread(shutil.move, str(source), str(destination))
         except PermissionError as e:
             raise FileAccessError(
                 message=f"Permission denied moving file: {source} -> {destination}",
@@ -462,13 +514,20 @@ class FileHandler:
             pattern: The glob pattern to validate.
 
         Raises:
-            ValueError: If the pattern contains unsafe sequences like '..'.
+            ValueError: If the pattern contains unsafe sequences like '..',
+                absolute paths (starting with '/'), or Windows drive letters.
         """
         if not pattern:
             return
         # Check for directory traversal attempts
         if ".." in pattern:
             raise ValueError("Glob pattern cannot contain '..' for security reasons")
+        # Check for absolute paths (Unix-style)
+        if pattern.startswith("/"):
+            raise ValueError("Glob pattern cannot be an absolute path for security reasons")
+        # Check for Windows drive letters (e.g., "C:", "D:")
+        if len(pattern) >= 2 and pattern[1] == ":" and pattern[0].isalpha():
+            raise ValueError("Glob pattern cannot contain drive letters for security reasons")
 
     def _list_directory_sync(self, path: Path, pattern: str) -> List[Path]:
         """Synchronous implementation of list_directory."""
@@ -638,7 +697,10 @@ class FileHandler:
 
         Raises:
             FileLockError: If the lock cannot be acquired within timeout.
+            FileAccessError: If there's a permission error creating the lock file.
+            FileOperationError: For other unexpected errors (disk full, etc.).
         """
+        # Compute lock_file path (same logic as FileLock.lock_file property)
         lock_file = path.parent / f".{path.name}.lock"
         start_time = time.monotonic()
 
@@ -650,7 +712,6 @@ class FileHandler:
                 lock = FileLock(
                     path=path,
                     acquired_at=datetime.now(timezone.utc),
-                    lock_file=lock_file,
                 )
                 with self._locks_mutex:
                     self._active_locks[path] = lock
@@ -673,7 +734,15 @@ class FileHandler:
             await asyncio.sleep(0.01)
 
     def _try_acquire_lock_sync(self, path: Path, lock_file: Path) -> bool:
-        """Try to acquire lock synchronously."""
+        """Try to acquire lock synchronously.
+
+        Returns:
+            True if lock was acquired, False if lock is held by another process.
+
+        Raises:
+            FileAccessError: If there's a permission error creating the lock file.
+            FileOperationError: For other unexpected OS errors (disk full, etc.).
+        """
         try:
             # Ensure parent directory exists
             lock_file.parent.mkdir(parents=True, exist_ok=True)
@@ -688,10 +757,19 @@ class FileHandler:
         except FileExistsError:
             # Lock already held by another process - expected behavior
             return False
+        except PermissionError as e:
+            # Permission denied - raise immediately instead of waiting for timeout
+            raise FileAccessError(
+                message=f"Permission denied creating lock file for: {path}",
+                details={"path": str(path), "lock_file": str(lock_file), "error": str(e)},
+            ) from e
         except OSError as e:
-            # Unexpected error (disk full, permission denied, etc.)
-            logger.debug(f"Failed to acquire lock for {path}: {e}")
-            return False
+            # Unexpected error (disk full, etc.) - raise immediately
+            logger.warning(f"Failed to acquire lock for {path}: {e}")
+            raise FileOperationError(
+                message=f"Error creating lock file for: {path}",
+                details={"path": str(path), "lock_file": str(lock_file), "error": str(e)},
+            ) from e
 
     async def release_lock(self, lock: FileLock) -> None:
         """Release a previously acquired lock.
@@ -712,8 +790,13 @@ class FileHandler:
             if lock.lock_file.exists():
                 lock.lock_file.unlink()
         except OSError as e:
-            # Log but don't raise - lock release should be best-effort
-            logger.warning(f"Failed to release lock file {lock.lock_file}: {e}")
+            # Log at ERROR level with actionable guidance - orphan lock files can
+            # block future operations indefinitely
+            logger.error(
+                f"Failed to release lock file {lock.lock_file}: {e}. "
+                f"This may leave an orphan lock file that blocks future operations. "
+                f"Manual cleanup may be required: delete {lock.lock_file}"
+            )
 
     @asynccontextmanager
     async def locked(self, path: Path, timeout: float = 10.0) -> AsyncIterator[FileLock]:

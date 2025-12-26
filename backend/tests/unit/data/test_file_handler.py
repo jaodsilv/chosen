@@ -1167,3 +1167,312 @@ class TestGlobPatternValidation:
 
         file1_only = await file_handler.list_directory(test_dir, pattern="file1.*")
         assert len(file1_only) == 1
+
+    async def test_glob_pattern_with_absolute_path_rejected(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test that glob patterns starting with '/' are rejected."""
+        # Arrange
+        test_dir = tmp_path / "test_dir"
+        test_dir.mkdir()
+
+        # Act & Assert
+        with pytest.raises(ValueError) as exc_info:
+            await file_handler.list_directory(test_dir, pattern="/etc/passwd")
+
+        assert "absolute path" in str(exc_info.value)
+
+    async def test_glob_pattern_with_drive_letter_rejected(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test that glob patterns with Windows drive letters are rejected."""
+        # Arrange
+        test_dir = tmp_path / "test_dir"
+        test_dir.mkdir()
+
+        # Act & Assert
+        with pytest.raises(ValueError) as exc_info:
+            await file_handler.list_directory(test_dir, pattern="C:\\Windows\\*")
+
+        assert "drive letters" in str(exc_info.value)
+
+    async def test_empty_glob_pattern_raises_error(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test that empty glob pattern raises an error from pathlib.glob."""
+        # Arrange
+        test_dir = tmp_path / "test_dir"
+        test_dir.mkdir()
+        (test_dir / "file1.txt").write_text("content", encoding="utf-8")
+
+        # Act & Assert - Empty pattern is invalid for pathlib.glob in Python 3.14+
+        # Earlier versions might behave differently, but current Python raises ValueError
+        with pytest.raises((ValueError, FileOperationError)):
+            await file_handler.list_directory(test_dir, pattern="")
+
+
+# =============================================================================
+# Copy and Move Permission Error Tests
+# =============================================================================
+
+
+@pytest.mark.unit
+class TestCopyMovePermissionErrors:
+    """Test suite for copy and move permission error handling."""
+
+    async def test_copy_file_permission_error(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test copy_file raises FileAccessError on permission error."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "destination.txt"
+        source.write_text("content", encoding="utf-8")
+
+        with patch("shutil.copy2", side_effect=PermissionError("Access denied")):
+            with pytest.raises(FileAccessError) as exc_info:
+                await file_handler.copy_file(source, destination)
+
+            assert "Permission denied" in exc_info.value.message
+
+    async def test_copy_file_os_error(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test copy_file raises FileOperationError on OS error."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "destination.txt"
+        source.write_text("content", encoding="utf-8")
+
+        with patch("shutil.copy2", side_effect=OSError("I/O error")):
+            with pytest.raises(FileOperationError) as exc_info:
+                await file_handler.copy_file(source, destination)
+
+            assert "Error copying file" in exc_info.value.message
+
+    async def test_move_file_permission_error(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test move_file raises FileAccessError on permission error."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "destination.txt"
+        source.write_text("content", encoding="utf-8")
+
+        with patch("shutil.move", side_effect=PermissionError("Access denied")):
+            with pytest.raises(FileAccessError) as exc_info:
+                await file_handler.move_file(source, destination)
+
+            assert "Permission denied" in exc_info.value.message
+
+    async def test_move_file_os_error(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test move_file raises FileOperationError on OS error."""
+        # Arrange
+        source = tmp_path / "source.txt"
+        destination = tmp_path / "destination.txt"
+        source.write_text("content", encoding="utf-8")
+
+        with patch("shutil.move", side_effect=OSError("I/O error")):
+            with pytest.raises(FileOperationError) as exc_info:
+                await file_handler.move_file(source, destination)
+
+            assert "Error moving file" in exc_info.value.message
+
+
+# =============================================================================
+# Recursive Delete Permission Error Tests
+# =============================================================================
+
+
+@pytest.mark.unit
+class TestRecursiveDeletePermissionErrors:
+    """Test suite for recursive delete permission error handling."""
+
+    async def test_delete_directory_recursive_permission_error(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test delete_directory with recursive=True raises FileAccessError on permission error."""
+        # Arrange
+        test_dir = tmp_path / "test_dir"
+        test_dir.mkdir()
+        (test_dir / "file.txt").write_text("content", encoding="utf-8")
+
+        with patch("shutil.rmtree", side_effect=PermissionError("Access denied")):
+            with pytest.raises(FileAccessError) as exc_info:
+                await file_handler.delete_directory(test_dir, recursive=True)
+
+            assert "Permission denied" in exc_info.value.message
+
+    async def test_delete_directory_recursive_os_error(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test delete_directory with recursive=True raises FileOperationError on OS error."""
+        # Arrange
+        test_dir = tmp_path / "test_dir"
+        test_dir.mkdir()
+        (test_dir / "file.txt").write_text("content", encoding="utf-8")
+
+        with patch("shutil.rmtree", side_effect=OSError("I/O error")):
+            with pytest.raises(FileOperationError) as exc_info:
+                await file_handler.delete_directory(test_dir, recursive=True)
+
+            assert "Error deleting directory" in exc_info.value.message
+
+
+# =============================================================================
+# UnicodeDecodeError Tests
+# =============================================================================
+
+
+@pytest.mark.unit
+class TestUnicodeDecodeError:
+    """Test suite for UnicodeDecodeError handling."""
+
+    async def test_read_file_unicode_decode_error(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test read_file raises FileOperationError for non-UTF-8 files."""
+        # Arrange - Create a file with invalid UTF-8 bytes
+        test_file = tmp_path / "invalid_utf8.txt"
+        # Write bytes that are invalid UTF-8 (0xFF 0xFE is not valid UTF-8)
+        test_file.write_bytes(b"\xff\xfe\x00\x01")
+
+        # Act & Assert
+        with pytest.raises(FileOperationError) as exc_info:
+            await file_handler.read_file(test_file)
+
+        assert "not valid UTF-8" in exc_info.value.message
+        assert "encoding" in exc_info.value.details
+
+
+# =============================================================================
+# FileInfo Invalid State Tests
+# =============================================================================
+
+
+@pytest.mark.unit
+class TestFileInfoInvalidState:
+    """Test suite for FileInfo invalid state validation."""
+
+    def test_fileinfo_cannot_be_neither_file_nor_directory(self) -> None:
+        """Test that FileInfo raises ValueError when both is_file and is_directory are False."""
+        from datetime import datetime, timezone
+
+        with pytest.raises(ValueError) as exc_info:
+            FileInfo(
+                path=Path("/test"),
+                size=100,
+                created_at=datetime.now(timezone.utc),
+                modified_at=datetime.now(timezone.utc),
+                is_file=False,
+                is_directory=False,
+            )
+
+        assert "must be either a file or a directory" in str(exc_info.value)
+
+
+# =============================================================================
+# FileLock Computed Property Tests
+# =============================================================================
+
+
+@pytest.mark.unit
+class TestFileLockComputedProperty:
+    """Test suite for FileLock computed lock_file property."""
+
+    def test_lock_file_is_computed_from_path(self) -> None:
+        """Test that lock_file is correctly computed from path."""
+        from datetime import datetime, timezone
+
+        lock = FileLock(
+            path=Path("/some/dir/myfile.txt"),
+            acquired_at=datetime.now(timezone.utc),
+        )
+
+        assert lock.lock_file == Path("/some/dir/.myfile.txt.lock")
+
+    def test_lock_file_computation_consistent(self) -> None:
+        """Test that lock_file computation is consistent across calls."""
+        from datetime import datetime, timezone
+
+        lock = FileLock(
+            path=Path("/test/file.yaml"),
+            acquired_at=datetime.now(timezone.utc),
+        )
+
+        # Multiple calls should return the same value
+        assert lock.lock_file == lock.lock_file
+        assert str(lock.lock_file).endswith(".file.yaml.lock")
+
+
+# =============================================================================
+# Lock Acquisition Error Tests
+# =============================================================================
+
+
+@pytest.mark.unit
+class TestLockAcquisitionErrors:
+    """Test suite for lock acquisition error handling."""
+
+    async def test_acquire_lock_permission_error(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test acquire_lock raises FileAccessError on permission error."""
+        # Arrange
+        test_file = tmp_path / "lockable.txt"
+        test_file.write_text("content", encoding="utf-8")
+
+        import os
+        with patch.object(os, "open", side_effect=PermissionError("Access denied")):
+            with pytest.raises(FileAccessError) as exc_info:
+                await file_handler.acquire_lock(test_file)
+
+            assert "Permission denied" in exc_info.value.message
+
+    async def test_acquire_lock_os_error(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test acquire_lock raises FileOperationError on unexpected OS error."""
+        # Arrange
+        test_file = tmp_path / "lockable.txt"
+        test_file.write_text("content", encoding="utf-8")
+
+        import os
+        with patch.object(os, "open", side_effect=OSError("Disk full")):
+            with pytest.raises(FileOperationError) as exc_info:
+                await file_handler.acquire_lock(test_file)
+
+            assert "Error creating lock file" in exc_info.value.message
+
+
+# =============================================================================
+# Negative Timeout Tests
+# =============================================================================
+
+
+@pytest.mark.unit
+class TestNegativeTimeout:
+    """Test suite for negative timeout handling."""
+
+    async def test_lock_with_negative_timeout(
+        self, tmp_path: Path, file_handler: FileHandler
+    ) -> None:
+        """Test lock acquisition with negative timeout fails immediately if locked."""
+        # Arrange
+        test_file = tmp_path / "negative_timeout.txt"
+        test_file.write_text("content", encoding="utf-8")
+
+        # Acquire first lock
+        lock1 = await file_handler.acquire_lock(test_file)
+
+        # Act & Assert - Negative timeout should fail immediately
+        with pytest.raises(FileLockError) as exc_info:
+            await file_handler.acquire_lock(test_file, timeout=-1.0)
+
+        assert "Timeout" in exc_info.value.message
+        assert exc_info.value.details["timeout"] == -1.0
+
+        # Cleanup
+        await file_handler.release_lock(lock1)
