@@ -299,6 +299,8 @@ class TestYAMLHandlerEdgeCases:
         assert loaded.context_analysis is not None
         assert loaded.fit_score is not None
         assert loaded.response_metrics is not None
+        assert original.context_analysis is not None
+        assert original.fit_score is not None
         assert loaded.context_analysis.summary == original.context_analysis.summary
         assert loaded.fit_score.overall_score == original.fit_score.overall_score
 
