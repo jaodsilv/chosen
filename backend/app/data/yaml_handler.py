@@ -28,7 +28,8 @@ from io import StringIO
 from pathlib import Path
 from typing import Type, TypeVar
 
-from pydantic import BaseModel, ValidationError as PydanticValidationError
+from pydantic import BaseModel
+from pydantic import ValidationError as PydanticValidationError
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
 

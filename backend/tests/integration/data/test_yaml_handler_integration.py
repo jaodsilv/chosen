@@ -18,7 +18,6 @@ from app.models.message import Message
 from app.models.metrics import ResponseMetrics
 from app.models.settings import UserSettings
 
-
 # =============================================================================
 # Fixtures
 # =============================================================================
