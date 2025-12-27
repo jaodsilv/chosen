@@ -79,5 +79,9 @@ logs/
 
 # Ruff
 .ruff_cache/
-data/
+
+# Root data directory (encrypted by git-crypt)
+/data/
+
+# Windows null device (accidentally created)
 nul

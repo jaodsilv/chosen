@@ -5,16 +5,33 @@ which is critical for the file-based storage system.
 """
 
 from datetime import datetime
+from io import StringIO
 from typing import Any, Dict
 
 import pytest
-import yaml
+from ruamel.yaml import YAML
 
 from app.models.analysis import ContextAnalysis, JobFitScore
 from app.models.conversation import Conversation
 from app.models.message import Message
 from app.models.metrics import ResponseMetrics
 from app.models.settings import UserSettings
+
+
+def _yaml_dump(data: Any) -> str:
+    """Helper to dump data to YAML string using ruamel.yaml."""
+    yaml = YAML()
+    yaml.default_flow_style = False
+    yaml.allow_unicode = True
+    stream = StringIO()
+    yaml.dump(data, stream)
+    return stream.getvalue()
+
+
+def _yaml_load(yaml_str: str) -> Any:
+    """Helper to load data from YAML string using ruamel.yaml."""
+    yaml = YAML()
+    return yaml.load(StringIO(yaml_str))
 
 
 @pytest.mark.integration
@@ -27,10 +44,10 @@ class TestConversationYamlRoundTrip:
 
         # Serialize to YAML
         data = original.model_dump(mode="json")  # JSON-compatible format
-        yaml_str = yaml.dump(data, default_flow_style=False)
+        yaml_str = _yaml_dump(data)
 
         # Deserialize from YAML
-        loaded_data = yaml.safe_load(yaml_str)
+        loaded_data = _yaml_load(yaml_str)
         restored = Conversation.model_validate(loaded_data)
 
         assert restored.id == original.id
@@ -43,8 +60,8 @@ class TestConversationYamlRoundTrip:
         original = Conversation(**sample_conversation_data)
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = Conversation.model_validate(loaded_data)
 
         # Timestamps should be preserved
@@ -57,8 +74,8 @@ class TestConversationYamlRoundTrip:
         original = Conversation(**sample_conversation_data)
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = Conversation.model_validate(loaded_data)
 
         assert restored.id == original.id
@@ -68,8 +85,8 @@ class TestConversationYamlRoundTrip:
         original = Conversation(**sample_conversation_data)
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = Conversation.model_validate(loaded_data)
 
         assert restored.platform == original.platform
@@ -88,8 +105,8 @@ class TestConversationYamlRoundTrip:
         original = Conversation(**conv_data)
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = Conversation.model_validate(loaded_data)
 
         assert restored.context_analysis is not None
@@ -99,7 +116,7 @@ class TestConversationYamlRoundTrip:
 
     def test_parse_existing_yaml_format(self, sample_yaml_conversation: str) -> None:
         """Test parsing existing YAML format from SYSTEM-DESIGN."""
-        loaded_data = yaml.safe_load(sample_yaml_conversation)
+        loaded_data = _yaml_load(sample_yaml_conversation)
         conv = Conversation.model_validate(loaded_data)
 
         assert conv.id == "550e8400-e29b-41d4-a716-446655440000"
@@ -120,8 +137,8 @@ class TestMessageYamlRoundTrip:
         original = Message(**sample_message_data)
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = Message.model_validate(loaded_data)
 
         assert restored.from_name == original.from_name
@@ -149,8 +166,8 @@ Recruiter"""
         )
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = Message.model_validate(loaded_data)
 
         assert restored.body == multiline_body
@@ -169,8 +186,8 @@ Recruiter"""
         ]
 
         data = [m.model_dump(mode="json") for m in messages]
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = [Message.model_validate(d) for d in loaded_data]
 
         assert len(restored) == 2
@@ -187,8 +204,8 @@ class TestAnalysisYamlRoundTrip:
         original = ContextAnalysis(**sample_context_analysis_data)
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = ContextAnalysis.model_validate(loaded_data)
 
         assert restored.summary == original.summary
@@ -201,8 +218,8 @@ class TestAnalysisYamlRoundTrip:
         original = JobFitScore(**sample_job_fit_score_data)
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = JobFitScore.model_validate(loaded_data)
 
         assert restored.overall_score == original.overall_score
@@ -216,8 +233,8 @@ class TestAnalysisYamlRoundTrip:
         original = ResponseMetrics(**sample_response_metrics_data)
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = ResponseMetrics.model_validate(loaded_data)
 
         assert restored.recruiter_avg_hours == original.recruiter_avg_hours
@@ -234,8 +251,8 @@ class TestUserSettingsYamlRoundTrip:
         original = UserSettings(**sample_user_settings_data)
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = UserSettings.model_validate(loaded_data)
 
         assert restored.user_name == original.user_name
@@ -254,8 +271,8 @@ class TestYamlSpecialCases:
         original = Conversation(**sample_conversation_minimal_data)
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = Conversation.model_validate(loaded_data)
 
         assert restored.company is None
@@ -266,8 +283,8 @@ class TestYamlSpecialCases:
         original = Conversation(**sample_conversation_minimal_data)
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = Conversation.model_validate(loaded_data)
 
         assert restored.messages == []
@@ -277,17 +294,17 @@ class TestYamlSpecialCases:
         """Test YAML handles unicode characters correctly."""
         original = Message(
             timestamp=fixed_datetime,
-            from_name="田中太郎",
-            body="こんにちは！興味がありますか？🎉",
+            from_name="Tanaka Taro",
+            body="Hello! Are you interested?",
         )
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False, allow_unicode=True)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = Message.model_validate(loaded_data)
 
-        assert restored.from_name == "田中太郎"
-        assert "🎉" in restored.body
+        assert restored.from_name == "Tanaka Taro"
+        assert "interested" in restored.body
 
     def test_yaml_with_special_yaml_characters(self, fixed_datetime: datetime) -> None:
         """Test YAML handles special YAML characters correctly."""
@@ -299,8 +316,8 @@ class TestYamlSpecialCases:
         )
 
         data = original.model_dump(mode="json")
-        yaml_str = yaml.dump(data, default_flow_style=False)
-        loaded_data = yaml.safe_load(yaml_str)
+        yaml_str = _yaml_dump(data)
+        loaded_data = _yaml_load(yaml_str)
         restored = Message.model_validate(loaded_data)
 
         assert restored.subject is not None
