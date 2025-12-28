@@ -110,10 +110,7 @@ class YAMLHandler:
             return stream.getvalue()
         except PydanticSerializationError as e:
             raise YAMLParseError(
-                message=(
-                    f"Failed to serialize {type(model).__name__}: "
-                    "model contains non-serializable data"
-                ),
+                message=(f"Failed to serialize {type(model).__name__}: " "model contains non-serializable data"),
                 details={
                     "model_type": type(model).__name__,
                     "error": str(e),
@@ -146,8 +143,7 @@ class YAMLHandler:
             data = self._yaml.load(StringIO(yaml_str))
             if data is None:
                 logger.debug(
-                    "YAML parsed to None (empty or null content), "
-                    "using empty dict for %s validation",
+                    "YAML parsed to None (empty or null content), " "using empty dict for %s validation",
                     model_class.__name__,
                 )
                 data = {}
