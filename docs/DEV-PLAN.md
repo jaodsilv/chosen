@@ -808,11 +808,23 @@ Utilities: >75%
 
 ## 5. Phase-Specific Workflows
 
-### 5.1 Phase 1 Workflow (Core Features)
+> **Note**: See [ROADMAP.md](../ROADMAP.md) for the canonical issue tracking and priorities.
 
-**Focus**: Foundation, data models, basic repositories, simple agents
+### 5.1 P0 Workflow (Minimal Working Backend)
 
-#### 5.1.1 Week 1-2: Foundation Tasks
+**Focus**: Data layer, basic API, AI resilience
+
+**Status**:
+| Issue | Description | Status |
+|-------|-------------|--------|
+| #66 | FileHandler - File operations | ✅ Done |
+| #67 | YAMLHandler - YAML serialization | ✅ Done |
+| #68 | RepositoryBase - CRUD interface | Pending |
+| #69 | ConversationRepository - Conversation CRUD | Pending |
+| #70 | Conversation REST endpoints | Pending |
+| NEW | AI Resilience Layer - Anthropic client with retries | Pending |
+
+#### 5.1.1 Data Layer Tasks (Weeks 1-2)
 
 **Task Pattern**: Setup + Core Models
 
@@ -843,7 +855,36 @@ Utilities: >75%
 9. Create PR
 ```
 
-#### 5.1.2 Week 3-4: Data Layer
+#### 5.1.2 AI Resilience Layer
+
+**Task Pattern**: Anthropic Client with Resilience
+
+```
+1. Create Worktree (feature/ai-resilience)
+   ↓
+2. Agent: Test Design Agent
+   - Retry logic tests (exponential backoff)
+   - Cache fallback tests
+   - Error handling tests
+   ↓
+3. Agent: Test Implementation Agent
+   - Write tests with mocked API responses
+   ↓
+4. Agent: Solution Design Agent
+   - Design AIClient class per SYSTEM-DESIGN.md section 4.5
+   ↓
+5. Agent: Implementation Agent
+   - Implement retry with exponential backoff
+   - Implement cache fallback
+   ↓
+6. Agent: Code Review Agent
+   ↓
+7. Integration tests with real API
+   ↓
+8. Commit & PR
+```
+
+#### 5.1.3 Repository Layer Tasks
 
 **Task Pattern**: Repository Implementation
 
@@ -884,7 +925,22 @@ For each repository (Conversation, Settings, etc.):
 11. Create PR
 ```
 
-#### 5.1.3 Week 5-6: Agent System
+### 5.2 P1 Workflow (Core Features + CLI)
+
+**Focus**: Agent foundation, response generation, CLI interface
+
+**Issues**:
+| Issue | Description | Status |
+|-------|-------------|--------|
+| #71 | ModelRouter - Claude API routing | Pending |
+| #72 | BaseAgent - Abstract agent base | Pending |
+| #73 | AgentOrchestrator - Multi-agent manager | Pending |
+| #74 | ResponseGeneratorAgent - Response generation | Pending |
+| #75-77 | Service layer | Pending |
+| #51 | GitHub Actions workflow | Pending |
+| NEW | CLI Tool - Command-line interface | Pending |
+
+#### 5.2.1 Agent System Tasks
 
 **Task Pattern**: Agent Implementation
 
@@ -893,17 +949,17 @@ For each repository (Conversation, Settings, etc.):
 
    a) Worktree: feature/base-agent
       ↓
-   b) TDD workflow for BaseAgent class
+   b) TDD workflow for BaseAgent class (#72)
       ↓
-   c) TDD workflow for ModelRouter
+   c) TDD workflow for ModelRouter (#71)
       ↓
-   d) TDD workflow for AgentOrchestrator
+   d) TDD workflow for AgentOrchestrator (#73)
       ↓
    e) Integration tests for agent system
       ↓
    f) PR & Merge
 
-2. First Agent (Response Generator):
+2. Response Generator Agent (#74):
 
    a) Worktree: feature/response-generator
       ↓
@@ -922,11 +978,52 @@ For each repository (Conversation, Settings, etc.):
    g) PR & Merge
 ```
 
-### 5.2 Phase 2 Workflow (Intelligence Layer)
+#### 5.2.2 CLI Tool Implementation
+
+**Task Pattern**: CLI Development
+
+```
+1. Create Worktree (feature/cli-tool)
+   ↓
+2. Agent: API Design Agent
+   - Define CLI commands: generate, list, analyze, config
+   - Map to backend endpoints
+   ↓
+3. Agent: Test Design Agent
+   - Unit tests for CLI commands
+   - Integration tests with mock backend
+   ↓
+4. Agent: Implementation Agent
+   - Implement CLI using click/typer
+   - Add HTTP client for backend API
+   - Add output formatters
+   ↓
+5. Agent: Code Review Agent
+   ↓
+6. Manual testing with running backend
+   ↓
+7. Commit & PR
+```
+
+**CLI Commands Reference** (see SYSTEM-DESIGN.md section 2.4):
+- `chosen generate "msg"` → POST /api/v1/messages/generate
+- `chosen list` → GET /api/v1/conversations
+- `chosen analyze <id>` → GET /api/v1/conversations/{id}/analysis
+
+### 5.3 P2 Workflow (Intelligence Layer)
 
 **Focus**: Analysis agents, intelligent features, caching
 
-#### 5.2.1 Analysis Agent Pattern
+**Issues**:
+| Issue | Description | Status |
+|-------|-------------|--------|
+| #78 | ContextAnalyzerAgent | Pending |
+| #79 | JobFitAnalyzerAgent | Pending |
+| #80-81 | Analysis endpoints + service | Pending |
+| #82 | FollowUpTimingOptimizer | Pending |
+| #48, #50, #54 | Model refinements | Pending |
+
+#### 5.3.1 Analysis Agent Pattern
 
 ```
 For each analysis agent (Context, JobFit, Timing, Quality):
@@ -976,18 +1073,26 @@ Developer C: feature/timing-optimizer
 All following the same pattern, merging as completed.
 ```
 
-### 5.3 Phase 3 Workflow (Advanced Features)
+### 5.4 P3 Workflow (Polish & Advanced Features)
 
-**Focus**: Specialized agents, A/B testing, analytics
+**Focus**: Production readiness, frontend, advanced agents
 
-#### 5.3.1 Specialized Agent Pattern
+**Issues**:
+| Issue | Description | Status |
+|-------|-------------|--------|
+| #83 | CompanyResearcherAgent | Pending |
+| #84 | CompensationNegotiationAgent | Pending |
+| #85 | Settings REST endpoints | Pending |
+| #86 | React frontend | Pending |
+| #46-47, 52-53, 58-65 | Model refinements | Pending |
 
-Same as Phase 2 analysis agents, but more complex:
+#### 5.4.1 Specialized Agent Pattern
+
+Same as P2 analysis agents, but more complex:
 
 ```
-feature/compensation-negotiation-agent
-feature/gap-researcher-agent
-feature/multi-conversation-analytics
+feature/company-researcher-agent (#83)
+feature/compensation-negotiation-agent (#84)
 ```
 
 Each requires:
@@ -996,29 +1101,25 @@ Each requires:
 - Complex output schemas
 - Extensive testing
 
-#### 5.3.2 A/B Testing Framework
+#### 5.4.2 Frontend Development
 
 ```
-1. Worktree: feature/ab-testing
+1. Worktree: feature/react-frontend (#86)
    ↓
-2. Design A/B testing data models
+2. Initialize React + TypeScript project
    ↓
-3. Design variant management
+3. Design component architecture
    ↓
-4. Design metrics collection
+4. Implement core components
    ↓
-5. Design statistical analysis
+5. Integrate with backend API
    ↓
-6. Implement with TDD
+6. Manual testing
    ↓
-7. Integration with agent system
+7. PR & Merge
 ```
 
-### 5.4 Phase 4 Workflow (Polish & Integration)
-
-**Focus**: External integrations, performance, documentation
-
-#### 5.4.1 Integration Development
+#### 5.4.3 Integration Development
 
 ```
 1. Worktree: feature/<integration-name>
@@ -1112,22 +1213,27 @@ PR Requirements:
   - Linked to GitHub issue
 ```
 
-### 6.4 Phase Completion Quality Gate
+### 6.4 Milestone Completion Quality Gate
 
-**Enforced by**: Manual checklist
+**Enforced by**: Manual checklist (per milestone)
 
 ```markdown
-Phase 1 Completion Checklist:
-- [ ] All Phase 1 tasks from PLAN.md completed
+P0 Completion Checklist:
+- [ ] All P0 tasks from ROADMAP.md completed (#68-70, AI Resilience)
+- [ ] CRUD operations for conversations work via REST API
+- [ ] AI client handles API outages gracefully
 - [ ] All tests passing (unit + integration)
-- [ ] Coverage targets met
-- [ ] API documentation updated
-- [ ] README updated
-- [ ] No critical security issues
-- [ ] Performance targets met
-- [ ] Manual smoke testing passed
-- [ ] Data migration tested (if applicable)
-- [ ] All Phase 1 PRs merged
+- [ ] Coverage >80% for new code
+- [ ] YAML files survive read/write cycles without corruption
+- [ ] All P0 PRs merged
+
+P1 Completion Checklist:
+- [ ] All P1 tasks from ROADMAP.md completed (#71-77, CLI, #51)
+- [ ] CLI command: `chosen generate "message"` returns AI response
+- [ ] CLI command: `chosen list` shows conversation history
+- [ ] All agents have snapshot tests
+- [ ] GitHub Actions runs tests on every PR
+- [ ] All P1 PRs merged
 ```
 
 ### 6.5 Merge Quality Gate

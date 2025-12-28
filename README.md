@@ -15,6 +15,23 @@ A multi-agent AI assistant that helps job seekers optimize their communication w
 - **Job Fit Scoring** - Evaluate job-candidate fit based on requirements
 - **Follow-up Optimization** - Get intelligent timing recommendations for follow-ups
 - **Secure Data Storage** - File-based YAML storage with git-crypt encryption
+- **CLI Interface** (P1) - Command-line tool for generating responses and managing conversations
+- **AI Resilience** (P0) - Graceful handling of API outages with retry and fallback mechanisms
+
+## Current Status
+
+| Milestone | Issues | Status |
+|-----------|--------|--------|
+| P0: Minimal Backend | 5 | 2 Done (#66, #67), 3 Pending |
+| P1: Core + CLI | 9 | Pending |
+| P2: Intelligence | 8 | Pending |
+| P3: Polish | 16 | Pending |
+
+**Completed:**
+- FileHandler (#66): File operations with read/write/lock
+- YAMLHandler (#67): YAML serialization with validation
+
+See [ROADMAP.md](ROADMAP.md) for details.
 
 ## Quick Start
 
@@ -92,6 +109,7 @@ chosen/
   - [DEV-PLAN.md](docs/DEV-PLAN.md) - Development process
   - [INTERFACE-DESIGN.md](docs/INTERFACE-DESIGN.md) - UI/UX specification
   - [requirements.md](docs/requirements.md) - Product requirements
+  - [planning/RISKS.md](docs/planning/RISKS.md) - Risk analysis and mitigations
 - [CLAUDE.md](CLAUDE.md) - Development commands and patterns
 - [DATA_SETUP.md](DATA_SETUP.md) - Data repository setup guide
 

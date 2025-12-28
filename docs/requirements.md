@@ -922,6 +922,56 @@ Your answer:
 - [ ] Yes, for operations over $X (specify): _______________
 - [ ] No, don't show costs
 
+### 10.4 CLI Tool Requirements (P1)
+
+> **Context**: The ROADMAP specifies a CLI as the P1 user interface, with web UI deferred to P3.
+
+**Q10.4.1**: For the CLI tool, which commands would you use most? (Rank 1-4)
+- [ ] **Rank ___**: `chosen generate "message"` - Generate AI response to a message
+- [ ] **Rank ___**: `chosen list` - List conversation history
+- [ ] **Rank ___**: `chosen analyze <id>` - Analyze conversation context
+- [ ] **Rank ___**: `chosen config` - Configure settings
+
+**Q10.4.2**: What output format do you prefer for CLI results?
+- [ ] Plain text (simple, copy-pasteable)
+- [ ] Formatted tables (structured, readable)
+- [ ] JSON (machine-readable, scriptable)
+- [ ] All of the above (configurable via flag)
+
+**Q10.4.3**: How should the CLI handle long-running operations (e.g., AI generation)?
+- [ ] Show spinner with status
+- [ ] Stream output as it's generated
+- [ ] Silent until complete
+- [ ] Progress bar with ETA
+
+**Q10.4.4**: Would you use the CLI directly or primarily through Claude Code integration?
+- [ ] Direct CLI usage (terminal)
+- [ ] Claude Code integration (via commands/agents)
+- [ ] Both equally
+- [ ] Unsure
+
+### 10.5 AI Resilience Requirements (P0)
+
+> **Context**: The system must handle Anthropic API outages gracefully. See [RISKS.md](planning/RISKS.md).
+
+**Q10.5.1**: When the AI service is temporarily unavailable, what behavior do you prefer?
+- [ ] Retry automatically with clear feedback
+- [ ] Fail fast with error message
+- [ ] Use cached response if similar prompt exists
+- [ ] Queue for later and notify when complete
+
+**Q10.5.2**: How should the system communicate API failures?
+- [ ] Clear user-friendly error message
+- [ ] Technical details for debugging
+- [ ] Both (summary + expandable details)
+- [ ] Silent retry, only show if all retries fail
+
+**Q10.5.3**: Are you comfortable with cached/fallback responses when API is unavailable?
+- [ ] Yes, prefer approximate response over no response
+- [ ] No, prefer to wait for live response
+- [ ] Only for non-critical operations (e.g., analysis, not generation)
+- [ ] Depends on context (ask me each time)
+
 ---
 
 ## Completion
