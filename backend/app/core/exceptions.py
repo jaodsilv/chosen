@@ -234,3 +234,29 @@ class DirectoryNotEmptyError(FileOperationError):
             error_type="DIRECTORY_NOT_EMPTY",
             details=details,
         )
+
+
+class YAMLParseError(FileOperationError):
+    """YAML parsing or serialization error.
+
+    Raised when YAML content cannot be parsed or when serialization fails.
+    This covers:
+        - Malformed YAML syntax during parsing
+        - Encoding issues in YAML content
+        - Schema validation failures during deserialization (Pydantic)
+        - Serialization failures for non-serializable model fields
+          (e.g., circular references, custom objects without serializers)
+    """
+
+    def __init__(
+        self,
+        message: str = "YAML parsing failed",
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        AppException.__init__(
+            self,
+            message=message,
+            status_code=422,
+            error_type="YAML_PARSE_ERROR",
+            details=details,
+        )
