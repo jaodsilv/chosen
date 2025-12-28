@@ -11,10 +11,11 @@ This module contains comprehensive tests for:
 
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from pydantic import BaseModel, field_serializer
+from ruamel.yaml.error import YAMLError
 
 from app.core.exceptions import (
     AppFileNotFoundError,
@@ -319,6 +320,28 @@ class TestYAMLHandlerErrors:
         assert exc_info.value.status_code == 422
         assert "non-serializable data" in exc_info.value.message
         assert exc_info.value.details["model_type"] == "ModelWithNonSerializableField"
+
+    def test_serialize_yaml_dump_error_raises_yaml_parse_error(
+        self,
+        yaml_handler: YAMLHandler,
+    ) -> None:
+        """Test that YAMLError during dump is converted to YAMLParseError.
+
+        This tests an unlikely edge case where ruamel.yaml fails to serialize
+        JSON-compatible data. While rare, the error handling must still work.
+        """
+        model = SimpleModel(name="test", value=42)
+
+        # Mock the YAML dump to raise YAMLError
+        with patch.object(
+            yaml_handler._yaml, "dump", side_effect=YAMLError("Mock YAML dump failure")
+        ):
+            with pytest.raises(YAMLParseError) as exc_info:
+                yaml_handler.serialize(model)
+
+        assert exc_info.value.status_code == 422
+        assert "Failed to serialize model to YAML" in exc_info.value.message
+        assert exc_info.value.details["model_type"] == "SimpleModel"
 
 
 # =============================================================================
