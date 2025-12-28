@@ -24,17 +24,21 @@ Example usage::
         await yaml_handler.save(conv, Path("output.yaml"))
 """
 
+import logging
 from io import StringIO
 from pathlib import Path
 from typing import Type, TypeVar
 
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
+from pydantic_core import PydanticSerializationError
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
 
 from app.core.exceptions import YAMLParseError
 from app.data.file_handler import FileHandler
+
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -96,13 +100,25 @@ class YAMLHandler:
             YAML-formatted string representation of the model.
 
         Raises:
-            YAMLParseError: If serialization fails due to YAML encoding issues.
+            YAMLParseError: If serialization fails due to non-serializable data
+                or YAML encoding issues.
         """
         try:
             data = model.model_dump(mode="json")
             stream = StringIO()
             self._yaml.dump(data, stream)
             return stream.getvalue()
+        except PydanticSerializationError as e:
+            raise YAMLParseError(
+                message=(
+                    f"Failed to serialize {type(model).__name__}: "
+                    "model contains non-serializable data"
+                ),
+                details={
+                    "model_type": type(model).__name__,
+                    "error": str(e),
+                },
+            ) from e
         except YAMLError as e:
             raise YAMLParseError(
                 message=f"Failed to serialize model to YAML: {e}",
@@ -129,6 +145,11 @@ class YAMLHandler:
         try:
             data = self._yaml.load(StringIO(yaml_str))
             if data is None:
+                logger.debug(
+                    "YAML parsed to None (empty or null content), "
+                    "using empty dict for %s validation",
+                    model_class.__name__,
+                )
                 data = {}
             return model_class.model_validate(data)
         except YAMLError as e:

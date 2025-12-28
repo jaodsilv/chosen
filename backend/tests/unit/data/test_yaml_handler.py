@@ -10,11 +10,11 @@ This module contains comprehensive tests for:
 """
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 
 from app.core.exceptions import (
     AppFileNotFoundError,
@@ -56,6 +56,19 @@ class ModelWithOptional(BaseModel):
 
     name: str
     optional_field: Optional[str] = None
+
+
+class ModelWithNonSerializableField(BaseModel):
+    """Model with a field that raises during serialization."""
+
+    name: str
+    callback: Callable[[], None]
+
+    model_config = {"arbitrary_types_allowed": True}
+
+    @field_serializer("callback")
+    def serialize_callback(self, value: Callable[[], None]) -> str:
+        raise ValueError("Cannot serialize callback")
 
 
 # =============================================================================
@@ -295,6 +308,17 @@ class TestYAMLHandlerErrors:
             yaml_handler.deserialize(malformed_yaml, SimpleModel)
 
         assert exc_info.value.error_type == "YAML_PARSE_ERROR"
+
+    def test_serialize_non_serializable_field_raises_error(self, yaml_handler: YAMLHandler) -> None:
+        """Test that non-serializable fields raise YAMLParseError."""
+        model = ModelWithNonSerializableField(name="test", callback=lambda: None)
+
+        with pytest.raises(YAMLParseError) as exc_info:
+            yaml_handler.serialize(model)
+
+        assert exc_info.value.status_code == 422
+        assert "non-serializable data" in exc_info.value.message
+        assert exc_info.value.details["model_type"] == "ModelWithNonSerializableField"
 
 
 # =============================================================================
