@@ -5,6 +5,7 @@ with real filesystem interactions and the actual Pydantic models used
 in the application.
 """
 
+import asyncio
 from pathlib import Path
 from typing import Any, Dict
 
@@ -390,3 +391,35 @@ Recruiter"""
         assert "$150K" in loaded.subject
         assert "yes/no" in loaded.body
         assert "true/false" in loaded.body
+
+    async def test_concurrent_save_with_file_locking(
+        self,
+        tmp_path: Path,
+        file_handler: FileHandler,
+        sample_conversation_minimal_data: Dict[str, Any],
+    ) -> None:
+        """Test concurrent saves with file locking pattern.
+
+        Demonstrates the recommended pattern for concurrent access:
+        use FileHandler.locked() to acquire exclusive access before
+        save operations.
+        """
+        file_path = tmp_path / "concurrent.yaml"
+        yaml_handler = YAMLHandler(file_handler)
+
+        async def save_with_lock(company_name: str) -> None:
+            """Save with lock to demonstrate safe concurrent pattern."""
+            async with file_handler.locked(file_path):
+                conv = Conversation(**{**sample_conversation_minimal_data, "company": company_name})
+                await yaml_handler.save(conv, file_path)
+
+        # Run multiple concurrent saves with locking
+        await asyncio.gather(
+            save_with_lock("Company A"),
+            save_with_lock("Company B"),
+            save_with_lock("Company C"),
+        )
+
+        # Verify file exists and contains valid YAML
+        loaded = await yaml_handler.load(file_path, Conversation)
+        assert loaded.company in ["Company A", "Company B", "Company C"]

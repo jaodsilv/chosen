@@ -240,8 +240,12 @@ class YAMLParseError(FileOperationError):
     """YAML parsing or serialization error.
 
     Raised when YAML content cannot be parsed or when serialization fails.
-    This covers malformed YAML syntax, encoding issues, and schema validation
-    failures during deserialization.
+    This covers:
+        - Malformed YAML syntax during parsing
+        - Encoding issues in YAML content
+        - Schema validation failures during deserialization (Pydantic)
+        - Serialization failures for non-serializable model fields
+          (e.g., circular references, custom objects without serializers)
     """
 
     def __init__(

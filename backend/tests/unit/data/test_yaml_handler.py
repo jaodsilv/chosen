@@ -506,3 +506,24 @@ class TestYAMLHandlerConfiguration:
     def test_yaml_preserves_quotes(self, yaml_handler: YAMLHandler) -> None:
         """Test that YAML handler preserves quotes."""
         assert yaml_handler._yaml.preserve_quotes is True
+
+    def test_yaml_width_prevents_line_wrapping(self, yaml_handler: YAMLHandler) -> None:
+        """Test that width=4096 prevents unwanted line wrapping."""
+        assert yaml_handler._yaml.width == 4096
+
+    def test_long_string_not_wrapped(self, yaml_handler: YAMLHandler) -> None:
+        """Test that long strings (URLs, base64) are not wrapped mid-value."""
+        # Create a string longer than default 80-char width
+        long_url = "https://example.com/" + "a" * 200 + "/path/to/resource"
+        model = SimpleModel(name=long_url, value=1)
+
+        yaml_str = yaml_handler.serialize(model)
+
+        # The long URL should appear on a single line, not wrapped
+        lines = yaml_str.strip().split("\n")
+        name_line = next(line for line in lines if line.startswith("name:"))
+        assert long_url in name_line
+
+        # Verify round-trip preserves the value
+        restored = yaml_handler.deserialize(yaml_str, SimpleModel)
+        assert restored.name == long_url

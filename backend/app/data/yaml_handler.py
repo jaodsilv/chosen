@@ -84,7 +84,10 @@ class YAMLHandler:
         self._yaml.preserve_quotes = True
         self._yaml.default_flow_style = False
         self._yaml.allow_unicode = True
-        self._yaml.width = 4096  # Prevent unwanted line wrapping
+        # Set width to 4096 to prevent unwanted line wrapping in long strings.
+        # Default ruamel.yaml width (80) causes URLs, base64 data, and long
+        # text fields to wrap mid-value, breaking round-trip fidelity.
+        self._yaml.width = 4096
 
     def serialize(self, model: BaseModel) -> str:
         """Serialize a Pydantic model to a YAML string.
