@@ -333,9 +333,7 @@ class TestYAMLHandlerErrors:
         model = SimpleModel(name="test", value=42)
 
         # Mock the YAML dump to raise YAMLError
-        with patch.object(
-            yaml_handler._yaml, "dump", side_effect=YAMLError("Mock YAML dump failure")
-        ):
+        with patch.object(yaml_handler._yaml, "dump", side_effect=YAMLError("Mock YAML dump failure")):
             with pytest.raises(YAMLParseError) as exc_info:
                 yaml_handler.serialize(model)
 
