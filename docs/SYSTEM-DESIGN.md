@@ -211,7 +211,7 @@ The CLI provides a command-line interface for generating responses and managing 
 |---------|-------------|------------------|
 | `chosen generate "msg"` | Generate AI response to message | POST /api/v1/messages/generate |
 | `chosen list` | List conversation history | GET /api/v1/conversations |
-| `chosen analyze <id>` | Analyze conversation context | GET /api/v1/conversations/{id}/analysis |
+| `chosen analyze <id>` | Analyze conversation context | POST /api/v1/conversations/{id}/analyze |
 | `chosen config` | Configure settings | GET/PUT /api/v1/settings |
 
 **CLI Module Structure**:
@@ -220,14 +220,17 @@ The CLI provides a command-line interface for generating responses and managing 
 backend/
 ├── cli/
 │   ├── __init__.py
-│   ├── main.py              # Entry point (click/typer)
+│   ├── main.py              # Entry point (typer)
 │   ├── commands/
 │   │   ├── __init__.py
 │   │   ├── generate.py      # Generate response command
 │   │   ├── list.py          # List conversations command
-│   │   └── analyze.py       # Analyze command
+│   │   ├── analyze.py       # Analyze command
+│   │   └── config.py        # Configuration command
 │   ├── client.py            # HTTP client for backend API
-│   └── formatters.py        # Output formatting
+│   ├── config.py            # CLI configuration management
+│   ├── formatters.py        # Output formatting
+│   └── styles.py            # Terminal styling (rich)
 ```
 
 **Example Usage**:
@@ -1338,7 +1341,7 @@ class AIClient:
             except RateLimitError as e:
                 last_error = e
                 wait_time = 2 ** attempt  # Exponential backoff: 1, 2, 4 seconds
-                time.sleep(wait_time)
+                await asyncio.sleep(wait_time)
 
             except APIConnectionError as e:
                 last_error = e

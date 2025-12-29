@@ -47,13 +47,16 @@ This document identifies key risks for the CHOSEN project and their mitigations.
 ```python
 # app/agents/client.py
 class AIClient:
-    def generate(self, prompt: str, model: str = "sonnet") -> str:
+    async def generate(self, prompt: str, model: str = "sonnet") -> str:
         for attempt in range(3):
             try:
-                return self._anthropic_call(prompt, model)
+                return await self._anthropic_call(prompt, model)
             except RateLimitError:
-                time.sleep(2 ** attempt)  # Exponential backoff
-        return self._cached_fallback(prompt) or raise ServiceUnavailable()
+                await asyncio.sleep(2 ** attempt)  # Exponential backoff
+        cached = self._cached_fallback(prompt)
+        if cached:
+            return cached
+        raise ServiceUnavailable()
 ```
 
 ---

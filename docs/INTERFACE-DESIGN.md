@@ -129,24 +129,11 @@ For debugging: chosen generate "..." --verbose
 
 ### 0.4 CLI Module Structure
 
-```
-backend/cli/
-├── __init__.py
-├── main.py              # Entry point (typer)
-├── commands/
-│   ├── __init__.py
-│   ├── generate.py      # Generate response
-│   ├── list.py          # List conversations
-│   ├── analyze.py       # Analyze conversation
-│   └── config.py        # Configuration
-├── client.py            # HTTP client for backend
-├── formatters.py        # Output formatting
-└── styles.py            # Terminal styling (rich)
-```
+See [SYSTEM-DESIGN.md section 2.4](SYSTEM-DESIGN.md#24-cli-architecture-p1) for the authoritative CLI module structure.
 
 ### 0.5 Implementation Notes
 
-- Use **typer** for CLI framework (or click)
+- Use **typer** for CLI framework
 - Use **rich** for terminal formatting and tables
 - Use **httpx** for async HTTP client
 - Configuration stored in `~/.chosen/config.yaml`

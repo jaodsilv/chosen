@@ -994,7 +994,7 @@ For each repository (Conversation, Settings, etc.):
    - Integration tests with mock backend
    ↓
 4. Agent: Implementation Agent
-   - Implement CLI using click/typer
+   - Implement CLI using typer
    - Add HTTP client for backend API
    - Add output formatters
    ↓

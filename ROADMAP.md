@@ -34,8 +34,8 @@ This roadmap outlines the development path toward a minimal working system where
 
 | Milestone | Issues | Estimate | Cumulative |
 |-----------|--------|----------|------------|
-| P0: Minimal Backend | 5 | 4-5 weeks | 4-5 weeks |
-| P1: Core + CLI | 8 | 5-7 weeks | 9-12 weeks |
+| P0: Minimal Backend | 6 | 4-5 weeks | 4-5 weeks |
+| P1: Core + CLI | 9 | 5-7 weeks | 9-12 weeks |
 | P2: Intelligence | 8 | 6-8 weeks | 15-20 weeks |
 | P3: Polish | 16 | 8-12 weeks | 23-32 weeks |
 
@@ -225,11 +225,11 @@ To get a minimal working system:
 
 | Priority | Count | Status |
 |----------|-------|--------|
-| P0 | 4 | 2 Done, 2 Pending + 1 New |
-| P1 | 8 | Pending + 1 New |
+| P0 | 6 | 2 Done, 3 Pending, 1 New |
+| P1 | 9 | 8 Pending, 1 New |
 | P2 | 8 | Pending |
 | P3 | 16 | Pending |
-| **Total Open** | **34** | - |
+| **Total Open** | **37** | - |
 
 *Note: Issue #45 (archive consistency validation) completed in PR #87. Issues #66, #67 completed.*
 
