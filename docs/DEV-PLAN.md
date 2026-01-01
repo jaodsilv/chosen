@@ -1008,7 +1008,7 @@ For each repository (Conversation, Settings, etc.):
 **CLI Commands Reference** (see SYSTEM-DESIGN.md section 2.4):
 - `chosen generate "msg"` → POST /api/v1/messages/generate
 - `chosen list` → GET /api/v1/conversations
-- `chosen analyze <id>` → GET /api/v1/conversations/{id}/analysis
+- `chosen analyze <id>` → POST /api/v1/conversations/{id}/analyze
 
 ### 5.3 P2 Workflow (Intelligence Layer)
 

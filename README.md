@@ -22,7 +22,7 @@ A multi-agent AI assistant that helps job seekers optimize their communication w
 
 | Milestone | Issues | Status |
 |-----------|--------|--------|
-| P0: Minimal Backend | 5 | 2 Done (#66, #67), 3 Pending |
+| P0: Minimal Backend | 6 | 2 Done (#66, #67), 4 Pending |
 | P1: Core + CLI | 9 | Pending |
 | P2: Intelligence | 8 | Pending |
 | P3: Polish | 16 | Pending |
