@@ -6,8 +6,13 @@
 
 ---
 
+> **Priority Note**: Per [ROADMAP.md](../ROADMAP.md), the **CLI is the P1 user interface** and should be implemented first. The web UI described in this document is **deferred to P3**. See Section 0 for CLI interface design.
+
+---
+
 ## Table of Contents
 
+0. [CLI Interface Design (P1)](#0-cli-interface-design-p1)
 1. [Design System](#1-design-system)
 2. [Layout Architecture](#2-layout-architecture)
 3. [Core Views](#3-core-views)
@@ -17,6 +22,122 @@
 7. [Accessibility](#7-accessibility)
 8. [Mobile Considerations](#8-mobile-considerations)
 9. [Implementation Strategy](#9-implementation-strategy)
+
+---
+
+## 0. CLI Interface Design (P1)
+
+> **Status**: Primary user interface - implement before web UI.
+
+The CLI provides a command-line interface for core CHOSEN functionality. It communicates with the FastAPI backend via HTTP.
+
+### 0.1 Command Overview
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `chosen generate "msg"` | Generate AI response to message | `chosen generate "Hi, I saw your profile..."` |
+| `chosen list` | List conversation history | `chosen list --status=interested` |
+| `chosen analyze <id>` | Analyze conversation context | `chosen analyze abc123` |
+| `chosen config` | Configure settings | `chosen config set api_key=xxx` |
+
+### 0.2 Output Formatting
+
+#### Generate Command Output
+
+```
+$ chosen generate "Hi, I came across your profile on LinkedIn..."
+
+┌────────────────────────────────────────────────────────────┐
+│ Generated Response                                          │
+├────────────────────────────────────────────────────────────┤
+│ Thank you for reaching out! I'm interested in learning     │
+│ more about this opportunity. Could you share additional    │
+│ details about the role, team size, and tech stack?         │
+│                                                            │
+│ I'd also like to understand the compensation range and     │
+│ whether visa sponsorship is available.                     │
+│                                                            │
+│ Looking forward to hearing from you.                       │
+│                                                            │
+│ Best regards                                               │
+└────────────────────────────────────────────────────────────┘
+
+📋 Copied to clipboard
+
+Model: sonnet | Tokens: 127 | Cost: $0.002
+```
+
+#### List Command Output
+
+```
+$ chosen list
+
+ID          Company         Recruiter       Status          Last Updated
+─────────────────────────────────────────────────────────────────────────
+abc123      Company A       John Smith      Interested      2 hours ago
+def456      Agency X        Jane Doe        Reviewing       1 day ago
+ghi789      TechCorp        Bob Wilson      Interviewing    3 days ago
+
+Showing 3 of 3 conversations. Use --all for archived.
+```
+
+#### Analyze Command Output
+
+```
+$ chosen analyze abc123
+
+┌─────────────────────────────────────────────────────────────┐
+│ Conversation Analysis: abc123                                │
+├─────────────────────────────────────────────────────────────┤
+│ Company:      Company A                                      │
+│ Status:       Interested                                     │
+│ Messages:     4 (2 recruiter, 2 you)                        │
+├─────────────────────────────────────────────────────────────┤
+│ Summary:                                                     │
+│ Initial recruiter outreach for senior engineering role.     │
+│ Positive tone, recruiter mentioned specific skills from     │
+│ your profile.                                               │
+├─────────────────────────────────────────────────────────────┤
+│ Sentiment:    Positive → Stable                             │
+│ Stage:        Initial Contact                               │
+├─────────────────────────────────────────────────────────────┤
+│ Next Actions:                                                │
+│ • Wait for recruiter response with job details              │
+│ • Prepare questions about H1B sponsorship                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 0.3 Error Handling
+
+```
+$ chosen generate "..."
+
+⚠️  AI Service Temporarily Unavailable
+
+Retrying... (attempt 2/3)
+Retrying... (attempt 3/3)
+
+❌ Service unavailable after 3 attempts.
+
+Suggestions:
+• Check your internet connection
+• Verify API key in config: chosen config show api_key
+• Try again in a few minutes
+
+For debugging: chosen generate "..." --verbose
+```
+
+### 0.4 CLI Module Structure
+
+See [SYSTEM-DESIGN.md section 2.4](SYSTEM-DESIGN.md#24-cli-architecture-p1) for the authoritative CLI module structure.
+
+### 0.5 Implementation Notes
+
+- Use **typer** for CLI framework
+- Use **rich** for terminal formatting and tables
+- Use **httpx** for async HTTP client
+- Configuration stored in `~/.chosen/config.yaml`
+- Support both interactive and piped output modes
 
 ---
 

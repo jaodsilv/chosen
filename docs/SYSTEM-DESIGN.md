@@ -185,6 +185,78 @@ User Input (Raw Message)
 | **Real-time** | WebSocket | Bidirectional, low-latency, native FastAPI support |
 | **Testing** | pytest | Python standard, fixtures, mocking, async support |
 
+### 2.4 CLI Architecture (P1)
+
+> **Status**: Primary user interface for P1 milestone. Web UI is deferred to P3.
+
+The CLI provides a command-line interface for generating responses and managing conversations. It communicates with the FastAPI backend via HTTP.
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                     CLI Application                             │
+│  chosen generate "message" | chosen list | chosen analyze <id> │
+└─────────────────────────────┬──────────────────────────────────┘
+                              │
+                              │ HTTP/REST
+                              │
+┌─────────────────────────────▼──────────────────────────────────┐
+│                     FastAPI Backend                             │
+│                   (localhost:8000)                              │
+└────────────────────────────────────────────────────────────────┘
+```
+
+**CLI Commands**:
+
+| Command | Description | Backend Endpoint |
+|---------|-------------|------------------|
+| `chosen generate "msg"` | Generate AI response to message | POST /api/v1/messages/generate |
+| `chosen list` | List conversation history | GET /api/v1/conversations |
+| `chosen analyze <id>` | Analyze conversation context | POST /api/v1/conversations/{id}/analyze |
+| `chosen config` | Configure settings | GET/PUT /api/v1/settings |
+
+**CLI Module Structure**:
+
+```
+backend/
+├── cli/
+│   ├── __init__.py
+│   ├── main.py              # Entry point (typer)
+│   ├── commands/
+│   │   ├── __init__.py
+│   │   ├── generate.py      # Generate response command
+│   │   ├── list.py          # List conversations command
+│   │   ├── analyze.py       # Analyze command
+│   │   └── config.py        # Configuration command
+│   ├── client.py            # HTTP client for backend API
+│   ├── config.py            # CLI configuration management
+│   ├── formatters.py        # Output formatting
+│   └── styles.py            # Terminal styling (rich)
+```
+
+**Example Usage**:
+
+```bash
+# Generate a response to a recruiter message
+$ chosen generate "Hi, I saw your profile and think you'd be great for..."
+[Generating response...]
+
+Thank you for reaching out! I'm interested in learning more about
+the position. Could you share more details about the role and team?
+
+# List recent conversations
+$ chosen list
+ID          Company         Status          Last Updated
+─────────────────────────────────────────────────────────
+abc123      Company A       Interested      2 hours ago
+def456      Agency X        Reviewing       1 day ago
+
+# Analyze a conversation
+$ chosen analyze abc123
+Summary: Initial recruiter outreach for senior engineering role
+Sentiment: Positive → Stable
+Next Action: Wait for recruiter response with job details
+```
+
 ---
 
 ## 3. Backend Architecture
@@ -1196,7 +1268,148 @@ class ModelRouter:
         return self.token_usage.copy()
 ```
 
-### 4.5 Example Agent: Context Analyzer
+### 4.5 AI Resilience Layer (P0)
+
+> **Status**: Critical path component for P0 milestone. See [RISKS.md](planning/RISKS.md) for detailed risk analysis.
+
+The AI Resilience Layer wraps the Anthropic client to provide fault tolerance and graceful degradation when the API is unavailable.
+
+```python
+# app/agents/ai_client.py
+import time
+from typing import Optional
+from pathlib import Path
+import hashlib
+import json
+
+from anthropic import AsyncAnthropic, RateLimitError, APIConnectionError
+from app.core.exceptions import ServiceUnavailableException
+
+class AIClient:
+    """
+    Resilient Anthropic API client.
+
+    Features:
+    - Exponential backoff retry (3 attempts)
+    - Cached response fallback for similar prompts
+    - Graceful degradation with user-friendly error messages
+    - Logging of all API failures
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        cache_dir: Path = Path("data/cache/prompts"),
+        max_retries: int = 3
+    ):
+        self.client = AsyncAnthropic(api_key=api_key)
+        self.cache_dir = cache_dir
+        self.max_retries = max_retries
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+    async def generate(
+        self,
+        prompt: str,
+        model: str = "sonnet",
+        system: Optional[str] = None,
+        **kwargs
+    ) -> str:
+        """
+        Generate response with retry and fallback.
+
+        Args:
+            prompt: User prompt
+            model: Model tier (haiku, sonnet, opus)
+            system: System prompt
+            **kwargs: Additional parameters
+
+        Returns:
+            Generated text or cached fallback
+
+        Raises:
+            ServiceUnavailableException: If all retries fail and no cache available
+        """
+        last_error = None
+
+        for attempt in range(self.max_retries):
+            try:
+                response = await self._call_api(prompt, model, system, **kwargs)
+                # Cache successful response
+                self._cache_response(prompt, model, response)
+                return response
+
+            except RateLimitError as e:
+                last_error = e
+                wait_time = 2 ** attempt  # Exponential backoff: 1, 2, 4 seconds
+                await asyncio.sleep(wait_time)
+
+            except APIConnectionError as e:
+                last_error = e
+                # Connection error - try cache immediately
+                break
+
+        # All retries failed - try cache fallback
+        cached = self._get_cached_response(prompt, model)
+        if cached:
+            return cached
+
+        raise ServiceUnavailableException(
+            message="AI service temporarily unavailable. Please try again later.",
+            details={"error": str(last_error), "attempts": self.max_retries}
+        )
+
+    async def _call_api(self, prompt: str, model: str, system: Optional[str], **kwargs) -> str:
+        """Make actual API call."""
+        from app.agents.model_router import ModelRouter
+        router = ModelRouter(api_key=self.client.api_key)
+        return await router.complete(model, prompt, system, **kwargs)
+
+    def _cache_key(self, prompt: str, model: str) -> str:
+        """Generate cache key from prompt and model."""
+        content = f"{model}:{prompt}"
+        return hashlib.sha256(content.encode()).hexdigest()[:16]
+
+    def _cache_response(self, prompt: str, model: str, response: str) -> None:
+        """Cache a successful response."""
+        key = self._cache_key(prompt, model)
+        cache_file = self.cache_dir / f"{key}.json"
+        cache_file.write_text(json.dumps({
+            "prompt": prompt[:200],  # Store truncated prompt for debugging
+            "model": model,
+            "response": response
+        }))
+
+    def _get_cached_response(self, prompt: str, model: str) -> Optional[str]:
+        """Get cached response if available."""
+        key = self._cache_key(prompt, model)
+        cache_file = self.cache_dir / f"{key}.json"
+        if cache_file.exists():
+            data = json.loads(cache_file.read_text())
+            return data.get("response")
+        return None
+```
+
+**Error Handling Strategy**:
+
+| Error Type | Retry? | Fallback | User Message |
+|-----------|--------|----------|--------------|
+| RateLimitError | Yes (exponential backoff) | Cache | "Service busy, retrying..." |
+| APIConnectionError | No | Cache | "Connection lost, using cached response" |
+| AuthenticationError | No | None | "Invalid API key configuration" |
+| All retries failed | N/A | Cache | "Service unavailable, please try later" |
+
+**Monitoring**:
+
+```python
+# Log all failures for debugging
+logger.error(f"API failure after {attempts} attempts: {error}")
+
+# Track metrics
+metrics.increment("api.failures", tags={"error_type": type(error).__name__})
+metrics.timing("api.retry_wait", total_wait_time)
+```
+
+### 4.6 Example Agent: Context Analyzer
 
 ```python
 # app/agents/analysis/context_analyzer.py
@@ -1654,6 +1867,14 @@ related_conversation_ids: []
 ```
 
 ### 5.4 Data Access Layer
+
+**Implementation Status**:
+| Component | Issue | Status | Description |
+|-----------|-------|--------|-------------|
+| FileHandler | #66 | ✅ Done | File read/write/lock operations |
+| YAMLHandler | #67 | ✅ Done | YAML serialization with validation |
+| RepositoryBase | #68 | Pending | Abstract CRUD interface with atomic writes |
+| ConversationRepository | #69 | Pending | Conversation CRUD with indexing |
 
 ```python
 # app/data/repository_base.py
@@ -2936,106 +3157,98 @@ async def test_full_conversation_workflow(client, test_data_dir):
 
 ## 10. Implementation Roadmap
 
-### 10.1 Phase 1: Core Foundation (Weeks 1-2)
+> See [ROADMAP.md](../ROADMAP.md) for the canonical roadmap with issue tracking.
 
-**Goal**: Establish basic infrastructure and core workflows
+### 10.1 P0: Minimal Working Backend (Critical Path)
 
-**Tasks**:
-1. Set up FastAPI application structure
-2. Implement data models (Conversation, Message, etc.)
-3. Create file-based repository layer
-4. Build base agent class and orchestrator
-5. Implement model router
-6. Create basic API endpoints (conversations, messages)
-7. Set up git-crypt encryption
-8. Write unit tests for core components
+**Goal**: Persist conversations and provide basic API with AI resilience
 
-**Deliverables**:
-- Working FastAPI backend
-- CRUD operations for conversations
-- Basic agent system
-- File storage operational
-- 70%+ test coverage
+**Issues**:
+| # | Task | Status |
+|---|------|--------|
+| #66 | FileHandler - File operations (read/write/lock) | ✅ Done |
+| #67 | YAMLHandler - YAML serialization with validation | ✅ Done |
+| #68 | RepositoryBase - Abstract CRUD interface with atomic writes | Pending |
+| #69 | ConversationRepository - Conversation CRUD with indexing | Pending |
+| #70 | Conversation REST endpoints - CRUD API | Pending |
+| NEW | AI Resilience Layer - Anthropic client with retries/fallback | Pending |
 
-### 10.2 Phase 2: Analysis Agents (Weeks 3-4)
+**Dependency Order**:
+```
+FileHandler → YAMLHandler → RepositoryBase → ConversationRepository → Conversation API
+                                                                            ↓
+                                                                   AI Resilience Layer
+```
 
-**Goal**: Implement intelligent analysis capabilities
+**Success Criteria**:
+- [ ] CRUD operations for conversations via REST API
+- [ ] API returns proper error codes (400/404/500)
+- [ ] YAML files survive read/write cycles without corruption
+- [ ] AI client handles Anthropic API outages gracefully
+- [ ] Unit test coverage >80% for new code
 
-**Tasks**:
-1. Develop Context Analyzer agent
-2. Develop Job Description Analyzer agent
-3. Develop Follow-up Timing Optimizer agent
-4. Develop Response Quality Scorer agent
-5. Integrate agents with API endpoints
-6. Create analysis caching system
-7. Add WebSocket support for real-time updates
-8. Write integration tests for agents
+### 10.2 P1: Core Features + CLI
 
-**Deliverables**:
-- 4 working analysis agents
-- Real-time analysis updates via WebSocket
-- Analysis API endpoints
-- Cached analysis results
+**Goal**: Generate responses, parse messages, CLI tool for "ready version"
 
-### 10.3 Phase 3: Response Generation (Weeks 5-6)
+**Issues**:
+| # | Task | Status |
+|---|------|--------|
+| #71 | ModelRouter - Claude API routing (Haiku/Sonnet/Opus) | Pending |
+| #72 | BaseAgent - Abstract agent base class | Pending |
+| #73 | AgentOrchestrator - Multi-agent execution manager | Pending |
+| #74 | ResponseGeneratorAgent - Generate professional responses | Pending |
+| #75 | Message REST endpoints - Message parsing and generation API | Pending |
+| #76 | ConversationService - Business logic layer | Pending |
+| #77 | MessageService - Message handling logic | Pending |
+| NEW | CLI Tool - Command-line interface for generating responses | Pending |
+| #51 | GitHub Actions workflow - CI/CD automation | Pending |
 
-**Goal**: Implement response generation system
+**Success Criteria**:
+- [ ] CLI command: `chosen generate "message text"` returns AI response
+- [ ] CLI command: `chosen list` shows conversation history
+- [ ] ResponseGeneratorAgent produces professional recruitment responses
+- [ ] All agents have snapshot tests for quality regression
+- [ ] GitHub Actions runs tests on every PR
 
-**Tasks**:
-1. Develop Response Generator agent
-2. Develop Follow-up Generator agent
-3. Create template system for quick replies
-4. Implement streaming response generation
-5. Build quality scoring into generation
-6. Add response editing/refinement workflow
-7. Create prompt templates
-8. Write tests for generation system
+### 10.3 P2: Intelligence Layer
 
-**Deliverables**:
-- Response generation agents
-- Template-based quick replies
-- Streaming support
-- Quality-checked responses
+**Goal**: Advanced analysis and insights
 
-### 10.4 Phase 4: Specialized Features (Weeks 7-8)
+**Issues**:
+| # | Task | Status |
+|---|------|--------|
+| #78 | ContextAnalyzerAgent - Conversation analysis | Pending |
+| #79 | JobFitAnalyzerAgent - Job-candidate fit scoring | Pending |
+| #80 | Analysis REST endpoints - Analysis API | Pending |
+| #81 | AnalysisService - Analysis orchestration | Pending |
+| #82 | FollowUpTimingOptimizer - Follow-up timing | Pending |
+| #48 | Integrate Participant model into Conversation | Pending |
+| #50 | Add length constraints to string fields | Pending |
+| #54 | Link Participant model to Conversation | Pending |
 
-**Goal**: Add advanced capabilities
+**Success Criteria**:
+- [ ] CLI command: `chosen analyze <id>` shows context analysis
+- [ ] JobFitAnalyzerAgent produces scores with explanations
+- [ ] Analysis endpoints return structured JSON results
 
-**Tasks**:
-1. Develop Compensation Negotiation agent
-2. Develop Multi-Conversation Analytics agent
-3. Implement follow-up reminder system
-4. Create opportunity comparison features
-5. Build knowledge base and learning system
-6. Add conversation archiving
-7. Implement status inference
-8. Write E2E tests
+### 10.4 P3: Polish and Advanced Features
 
-**Deliverables**:
-- Negotiation support
-- Analytics dashboard
-- Automated follow-up system
-- Learning from past conversations
+**Goal**: Production readiness, frontend, advanced agents
 
-### 10.5 Phase 5: Polish & Documentation (Week 9)
+**Issues**:
+| # | Task | Status |
+|---|------|--------|
+| #83 | CompanyResearcherAgent - Company research | Pending |
+| #84 | CompensationNegotiationAgent - Negotiation guidance | Pending |
+| #85 | Settings REST endpoints - User settings API | Pending |
+| #86 | React frontend - Web UI | Pending |
+| #46-47, 52-53, 58-65 | Model refinements - Documentation and edge cases | Pending |
 
-**Goal**: Finalize system and prepare for production
-
-**Tasks**:
-1. Performance optimization
-2. Error handling improvements
-3. Logging and monitoring setup
-4. API documentation (OpenAPI/Swagger)
-5. User documentation
-6. Deployment guide
-7. Security audit
-8. Load testing
-
-**Deliverables**:
-- Production-ready system
-- Complete documentation
-- Deployment instructions
-- Performance benchmarks
+**Success Criteria**:
+- [ ] React frontend deployed and functional
+- [ ] All model documentation complete
+- [ ] Production deployment guide available
 
 ---
 
