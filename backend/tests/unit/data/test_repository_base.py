@@ -18,7 +18,6 @@ from app.data.file_handler import FileHandler
 from app.data.repository_base import RepositoryBase
 from app.data.yaml_handler import YAMLHandler
 
-
 # =============================================================================
 # Test Model and Concrete Implementation
 # =============================================================================
