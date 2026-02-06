@@ -10,11 +10,13 @@ on:
     branches: [main]
     paths:
       - 'backend/**'
+      - '.github/workflows/test.yml'
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: ./backend
@@ -29,20 +31,24 @@ jobs:
           cache-dependency-path: 'backend/requirements*.txt'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt -r requirements-dev.txt
+        run: |
+          pip install -r requirements.txt -r requirements-dev.txt
+          pip check
 
       - name: Run tests with coverage
-        run: pytest --cov=app --cov-report=term-missing --cov-report=xml
+        run: pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=80
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: backend/coverage.xml
+          if-no-files-found: error
         if: always()
 
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: ./backend
@@ -57,13 +63,15 @@ jobs:
           cache-dependency-path: 'backend/requirements*.txt'
 
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt
+        run: |
+          pip install -r requirements.txt -r requirements-dev.txt
+          pip check
 
       - name: Check formatting with Black
-        run: black --check --config=pyproject.toml app/
+        run: black --check --diff --config=pyproject.toml app/
 
       - name: Check import sorting with isort
-        run: isort --check-only --settings-path=pyproject.toml app/
+        run: isort --check-only --diff --settings-path=pyproject.toml app/
 
       - name: Lint with flake8
         run: flake8 --max-line-length=120 --extend-ignore=E203,W503 app/
